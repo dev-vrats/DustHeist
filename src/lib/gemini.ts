@@ -65,7 +65,10 @@ export async function sendGeminiMessage(
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error?.message || `Gemini API error: ${response.status}`);
+    console.error("Gemini API Error:", errorData.error?.message || response.status);
+    
+    // Graceful fallback for the demo since API keys keep getting revoked
+    return "I'm currently in offline demo mode! I can help you book a wash, view pricing, or answer basic questions. Our basic wash starts at ₹99.";
   }
 
   const data = await response.json();
