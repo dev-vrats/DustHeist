@@ -1,0 +1,1 @@
+export default function WasherEarnings() { return <div className="p-8 text-white text-center mt-20">WasherEarnings (Coming Soon - Subagents were rate limited)</div>; }

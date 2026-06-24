@@ -1,0 +1,1 @@
+export default function SignUpPage() { return <div className="p-8 text-white text-center mt-20">SignUpPage (Coming Soon - Subagents were rate limited)</div>; }

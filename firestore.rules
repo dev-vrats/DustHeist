@@ -1,0 +1,118 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isCustomer() {
+      return isAuth() && getUserRole() == 'customer';
+    }
+
+    function isWasher() {
+      return isAuth() && getUserRole() == 'washer';
+    }
+
+    function isAdmin() {
+      return isAuth() && getUserRole() == 'admin';
+    }
+
+    // Users collection — everyone can read their own, admin reads all
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isAuth() && request.auth.uid == uid;
+      allow update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Customers collection
+    match /customers/{uid} {
+      allow read: if isOwner(uid) || isAdmin() || isWasher();
+      allow create: if isAuth() && request.auth.uid == uid;
+      allow update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Washers collection — customers can read (for finding nearby washers)
+    match /washers/{uid} {
+      allow read: if isAuth();
+      allow create: if isAuth() && request.auth.uid == uid;
+      allow update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Admins collection
+    match /admins/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Bookings — customers create, washers can update status, admin reads all
+    match /bookings/{bookingId} {
+      allow read: if isAuth() && (
+        resource.data.customerId == request.auth.uid ||
+        resource.data.washerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isCustomer();
+      allow update: if isAuth() && (
+        resource.data.customerId == request.auth.uid ||
+        resource.data.washerId == request.auth.uid ||
+        // Washer can claim a pending booking
+        (isWasher() && resource.data.status == 'pending') ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Subscriptions
+    match /subscriptions/{subId} {
+      allow read: if isAuth() && (resource.data.customerId == request.auth.uid || isAdmin());
+      allow create: if isCustomer();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Coupons — customers can read active ones, admin writes
+    match /coupons/{couponId} {
+      allow read: if isAuth() && resource.data.isActive == true;
+      allow write: if isAdmin();
+    }
+
+    // Chats — only the booking participants can read/write
+    match /chats/{bookingId}/messages/{msgId} {
+      allow read, write: if isAuth() && (
+        get(/databases/$(database)/documents/bookings/$(bookingId)).data.customerId == request.auth.uid ||
+        get(/databases/$(database)/documents/bookings/$(bookingId)).data.washerId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    // Platform settings — admin writes, all auth reads
+    match /settings/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // Notifications log
+    match /notifications_log/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // SOS alerts
+    match /sos/{uid} {
+      allow create: if isOwner(uid);
+      allow read: if isAdmin();
+    }
+  }
+}

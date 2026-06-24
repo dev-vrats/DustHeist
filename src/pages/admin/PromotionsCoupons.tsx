@@ -1,0 +1,1 @@
+export default function PromotionsCoupons() { return <div className="p-8 text-white text-center mt-20">PromotionsCoupons (Coming Soon - Subagents were rate limited)</div>; }
