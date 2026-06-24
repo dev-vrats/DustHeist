@@ -572,9 +572,21 @@ export default function LandingPage() {
                   </a>
                 </li>
                 <li>
-                  <a href="tel:+919876543210" className="flex items-center gap-2.5 text-muted text-sm hover:text-primary transition-colors">
+                  <a href="tel:+916388489971" className="flex items-center gap-2.5 text-muted text-sm hover:text-primary transition-colors">
                     <Phone size={14} className="shrink-0 text-primary" />
-                    +91-98765-43210
+                    +91 6388489971
+                  </a>
+                </li>
+                <li>
+                  <a href="tel:+919555377493" className="flex items-center gap-2.5 text-muted text-sm hover:text-primary transition-colors">
+                    <Phone size={14} className="shrink-0 text-primary" />
+                    +91 9555377493
+                  </a>
+                </li>
+                <li>
+                  <a href="tel:+919214217771" className="flex items-center gap-2.5 text-muted text-sm hover:text-primary transition-colors">
+                    <Phone size={14} className="shrink-0 text-primary" />
+                    +91 9214217771
                   </a>
                 </li>
                 <li>
