@@ -160,7 +160,7 @@ export default function LandingPage() {
                 Sign in
               </Link>
               <Link
-                to="/book"
+                to="/customer/book"
                 className="btn-primary flex items-center gap-2 !py-2 !px-5 text-sm"
               >
                 Book Now <ArrowRight size={14} />
@@ -245,14 +245,14 @@ export default function LandingPage() {
           className="mt-8 flex flex-col sm:flex-row gap-4 justify-center w-full max-w-sm sm:max-w-none"
         >
           <Link
-            to="/book"
+            to="/customer/book"
             className="btn-primary flex items-center justify-center gap-2 !text-base !px-8 !py-4"
           >
             <Zap size={18} />
             Book Now — It's Free
           </Link>
           <Link
-            to="/washer/register"
+            to="/signup?role=washer"
             className="flex items-center justify-center gap-2 border border-white/20 bg-white/5 backdrop-blur-sm text-text-light font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:bg-white/10 hover:border-white/30 text-base"
           >
             <Car size={18} />
@@ -360,7 +360,7 @@ export default function LandingPage() {
                 </ul>
 
                 <Link
-                  to="/book"
+                  to="/customer/book"
                   className={`mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
                     s.popular
                       ? 'bg-primary text-white shadow-glow-blue hover:bg-primary/90'
@@ -513,11 +513,11 @@ export default function LandingPage() {
                   Join hundreds of happy customers who've discovered the easiest way to keep their car clean.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link to="/book" className="btn-primary flex items-center justify-center gap-2 !px-10 !py-4 !text-base">
+                  <Link to="/customer/book" className="btn-primary flex items-center justify-center gap-2 !px-10 !py-4 !text-base">
                     <Zap size={18} /> Book Your First Wash
                   </Link>
                   <Link
-                    to="/washer/register"
+                    to="/signup?role=washer"
                     className="flex items-center justify-center gap-2 border border-white/15 bg-white/5 backdrop-blur-sm text-text-light font-semibold px-10 py-4 rounded-xl transition-all duration-200 hover:bg-white/10 text-base"
                   >
                     Earn as a Washer
@@ -584,7 +584,7 @@ export default function LandingPage() {
               <ul className="space-y-3">
                 {[
                   { label: 'About Us', to: '/about' },
-                  { label: 'Become a Washer', to: '/washer/register' },
+                  { label: 'Become a Washer', to: '/signup?role=washer' },
                   { label: 'Pricing', to: '#services' },
                   { label: 'FAQs', to: '/faq' },
                 ].map((l) => (
