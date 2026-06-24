@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 import {
   MapPin, Car, Sparkles, Droplets, Home, History,
   User, MessageCircle, Navigation, ChevronRight,
@@ -62,6 +63,13 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return R * c;
+}
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
 }
 
 const customerIcon = new L.DivIcon({
@@ -133,11 +141,16 @@ export default function CustomerHome() {
           setAddress('Unable to resolve address');
         }
       },
-      () => {
-        setCity('India');
-        setAddress('Location permission denied');
+      (error) => {
+        if (error.code === 1) {
+          setCity('Location Denied');
+          setAddress('Location permission denied');
+        } else {
+          setCity('Locating failed');
+          setAddress('Could not determine location. Check signal.');
+        }
       },
-      { timeout: 8000 }
+      { timeout: 15000, enableHighAccuracy: true }
     );
   }, []);
 
@@ -217,7 +230,7 @@ export default function CustomerHome() {
                 )}
               </motion.div>
               <div>
-                <p className="text-xs text-muted">Good morning</p>
+                <p className="text-xs text-muted">{getGreeting()}</p>
                 <p className="text-sm font-semibold text-text-light">Hey {firstName}</p>
               </div>
             </div>
@@ -226,7 +239,7 @@ export default function CustomerHome() {
                 <MapPin size={12} className="text-primary" />
                 <span className="max-w-[80px] truncate">{city}</span>
               </div>
-              <motion.button whileTap={{ scale: 0.9 }} className="w-9 h-9 rounded-xl bg-dark-card border border-dark-border flex items-center justify-center relative">
+              <motion.button onClick={() => toast('No new notifications', { icon: '🔔' })} whileTap={{ scale: 0.9 }} className="w-9 h-9 rounded-xl bg-dark-card border border-dark-border flex items-center justify-center relative">
                 <Bell size={16} className="text-muted" />
                 <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent" />
               </motion.button>
