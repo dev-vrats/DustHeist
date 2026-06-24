@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import {
   MapPin, Star, Zap, ZapOff, TrendingUp, Briefcase,
   Clock, Car, CheckCircle,
-  Wallet, Calendar, BarChart2,
+  Wallet, Calendar, BarChart2, Bell
 } from 'lucide-react';
 import {
   collection, doc, query, where, onSnapshot,
@@ -185,7 +185,7 @@ export default function WasherHome() {
     watcherRef.current = navigator.geolocation.watchPosition(
       (pos) => setCurrentLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
       (err) => toast.error(`Location: ${err.message}`),
-      { enableHighAccuracy: true, maximumAge: 10000 },
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 },
     );
 
     locationIntervalRef.current = setInterval(() => {
@@ -279,7 +279,24 @@ export default function WasherHome() {
 
   return (
     <div className="min-h-screen bg-dark-bg pb-24">
-      {/* ── Top Bar ──────────────────────────────────────────────────────── */}
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <div className="bg-dark-card/90 backdrop-blur-xl border-b border-dark-border px-4 pt-12 pb-4 flex items-center justify-between sticky top-0 z-40">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-glow-blue">
+            {getInitials(profile?.name || 'Washer')}
+          </div>
+          <div>
+            <p className="text-muted text-xs font-medium">Hello,</p>
+            <h1 className="text-text-light font-bold text-sm">{profile?.name?.split(' ')[0] || 'Washer'} 👋</h1>
+          </div>
+        </div>
+        <button className="relative p-2 rounded-full hover:bg-white/5 transition-colors">
+          <Bell size={20} className="text-text-light" />
+          <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-accent rounded-full border-2 border-dark-card" />
+        </button>
+      </div>
+
+      {/* ── Washer Stats Quick Look ───────────────────────────────────── */}
       <div className="sticky top-0 z-30 bg-dark-bg/90 backdrop-blur-md border-b border-dark-border px-4 pt-10 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
