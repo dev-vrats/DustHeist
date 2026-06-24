@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -158,14 +158,15 @@ export default function LoginPage() {
   const [showForgot, setShowForgot]     = useState(false);
 
   /* Already logged-in guard */
-  if (profile) {
-    const dest =
-      profile.role === 'customer' ? '/customer'
-      : profile.role === 'washer' ? '/washer'
-      : '/admin';
-    navigate(dest, { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (profile) {
+      const dest =
+        profile.role === 'customer' ? '/customer'
+        : profile.role === 'washer' ? '/washer'
+        : '/admin';
+      navigate(dest, { replace: true });
+    }
+  }, [profile, navigate]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
