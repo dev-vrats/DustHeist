@@ -35,18 +35,18 @@ const SERVICE_CONFIG: Record<
   { emoji: string; duration: string; bullets: string[]; popular?: boolean }
 > = {
   basic: {
-    emoji: '🚿',
+    emoji: '',
     duration: '30 min',
     bullets: ['Full exterior rinse', 'Foam wash & rinse', 'Tyre & rim clean'],
   },
   premium: {
-    emoji: '✨',
+    emoji: '',
     duration: '45 min',
     popular: true,
     bullets: ['Everything in Basic', 'Interior wipe-down', 'Glass polish & shine'],
   },
   deep: {
-    emoji: '🧽',
+    emoji: '',
     duration: '75 min',
     bullets: ['Everything in Premium', 'Engine bay light clean', 'Clay bar decontamination'],
   },
@@ -737,7 +737,7 @@ function Step3Time({
             isAsap ? 'bg-primary/20' : 'bg-dark-border/30'
           }`}
         >
-          ⚡
+          -
         </div>
         <div className="text-left">
           <p className={`font-semibold ${isAsap ? 'text-primary' : 'text-text-light'}`}>ASAP</p>
@@ -1235,7 +1235,7 @@ function Step6Confirmed({
               <p className="text-sm font-semibold text-accent">Washer Found!</p>
             </div>
             <div className="w-14 h-14 bg-primary/20 rounded-full flex items-center justify-center mx-auto text-2xl">
-              👨‍🔧
+              -
             </div>
             <p className="text-text-light font-semibold">{washerFound.name}</p>
             <p className="text-xs text-muted">is on the way to your location</p>
@@ -1259,9 +1259,9 @@ function Step6Confirmed({
       >
         <p className="text-xs font-semibold text-muted uppercase tracking-wider">Tips</p>
         {[
-          '🚗 Make sure your car is accessible',
-          '💧 Ensure water access nearby',
-          '🔑 Stay reachable on your phone',
+          'Make sure your car is accessible',
+          'Ensure water access nearby',
+          'Leave keys at reception if needed',
         ].map((tip) => (
           <p key={tip} className="text-sm text-muted">{tip}</p>
         ))}

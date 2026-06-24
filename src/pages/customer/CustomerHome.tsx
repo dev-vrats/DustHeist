@@ -171,7 +171,7 @@ export default function CustomerHome() {
               </motion.div>
               <div>
                 <p className="text-xs text-muted">Good morning</p>
-                <p className="text-sm font-semibold text-text-light">Hey {firstName} 👋</p>
+                <p className="text-sm font-semibold text-text-light">Hey {firstName}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">

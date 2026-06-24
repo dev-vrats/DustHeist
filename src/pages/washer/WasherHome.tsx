@@ -225,7 +225,7 @@ export default function WasherHome() {
         });
         setIsOnline(true);
         startTracking();
-        toast.success("You're now Online 🟢", { icon: '🚗' });
+        toast.success("You're now Online");
       } else {
         await stopTracking();
         setIsOnline(false);
@@ -249,7 +249,7 @@ export default function WasherHome() {
         status: 'accepted',
         'checklist.accepted': true,
       });
-      toast.success('Job Accepted!', { icon: '✅' });
+      toast.success('Job Accepted!');
       setIncomingJob(null);
       navigate(`/washer/job/${incomingJob.id}`);
     } catch {

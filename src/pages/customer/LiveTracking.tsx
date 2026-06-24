@@ -14,6 +14,9 @@ import {
   Clock,
   Navigation,
   ChevronLeft,
+  MapPin,
+  Droplets,
+  Sparkles,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -22,7 +25,7 @@ import toast from 'react-hot-toast';
 interface ChecklistStep {
   key: keyof Booking['checklist'] | 'confirmed';
   label: string;
-  icon: string;
+  icon: React.ReactNode;
 }
 
 interface WasherInfo {
@@ -36,12 +39,12 @@ interface WasherInfo {
 // ─── Checklist config ────────────────────────────────────────────────────────
 
 const CHECKLIST_STEPS: ChecklistStep[] = [
-  { key: 'confirmed', label: 'Booking Confirmed', icon: '✅' },
-  { key: 'accepted', label: 'Washer Accepted', icon: '🤝' },
-  { key: 'enRoute', label: 'En Route to You', icon: '🚗' },
-  { key: 'arrived', label: 'Arrived at Location', icon: '📍' },
-  { key: 'started', label: 'Wash in Progress', icon: '🧽' },
-  { key: 'completed', label: 'Completed', icon: '✨' },
+  { key: 'confirmed', label: 'Booking Confirmed', icon: <CheckCircle2 size={24} /> },
+  { key: 'accepted', label: 'Washer Accepted', icon: <CheckCircle2 size={24} /> },
+  { key: 'enRoute', label: 'En Route to You', icon: <Car size={24} /> },
+  { key: 'arrived', label: 'Arrived at Location', icon: <MapPin size={24} /> },
+  { key: 'started', label: 'Wash in Progress', icon: <Droplets size={24} /> },
+  { key: 'completed', label: 'Wash Completed', icon: <Sparkles size={24} /> },
 ];
 
 // ─── Simulated Map ───────────────────────────────────────────────────────────
@@ -123,7 +126,7 @@ function SimulatedMap({ washerX }: { washerX: number }) {
           <div className="relative">
             <span className="absolute inset-0 rounded-full bg-warning-500 opacity-30 animate-ping scale-150 block" />
             <div className="relative w-10 h-10 rounded-full bg-warning-500/20 border-2 border-warning-500 flex items-center justify-center text-xl shadow-glow-orange">
-              🚗
+              <Car size={20} className="text-warning-500" />
             </div>
           </div>
           <div className="mt-1 px-2 py-0.5 rounded-full bg-warning-500 text-white text-[10px] font-bold whitespace-nowrap shadow-md">
@@ -143,7 +146,7 @@ function SimulatedMap({ washerX }: { washerX: number }) {
           <div className="relative">
             <span className="absolute inset-0 rounded-full bg-accent opacity-30 animate-ping scale-150 block" />
             <div className="relative w-10 h-10 rounded-full bg-accent/20 border-2 border-accent flex items-center justify-center text-xl shadow-glow-green">
-              🏠
+              <MapPin size={20} className="text-accent" />
             </div>
           </div>
           <div className="mt-1 px-2 py-0.5 rounded-full bg-accent text-white text-[10px] font-bold whitespace-nowrap shadow-md">
@@ -240,7 +243,7 @@ function CompletionOverlay({ onRate }: { onRate: () => void }) {
         className="text-center w-full max-w-xs"
       >
         <h2 className="text-3xl font-display font-bold text-text-light mb-2">
-          Wash Complete! 🎉
+          Wash Complete!
         </h2>
         <p className="text-muted text-sm mb-8">
           Your car is squeaky clean and ready to roll.
@@ -290,7 +293,7 @@ function TimelineStep({
           {isDone ? (
             <CheckCircle2 className="w-4 h-4 text-accent" />
           ) : (
-            <span>{step.icon}</span>
+            <div className={isCurrent ? 'text-warning-500' : 'text-muted'}>{step.icon}</div>
           )}
         </motion.div>
         {!isLast && (
@@ -375,13 +378,13 @@ function GoogleMapView({
       zoom={14}
       options={{ disableDefaultUI: true, styles: darkStyle, gestureHandling: 'cooperative' }}
     >
-      <Marker position={center} label="🏠" />
-      {washerLocation && <Marker position={washerLocation} label="🚗" />}
+      <Marker position={center} />
+      {washerLocation && <Marker position={washerLocation} />}
     </GoogleMap>
   );
 }
 
-// ─── Main Component ──────────────────────────────────────────────────────────
+// ─── Main Component ────────────────────────────────────────────────────────
 
 export default function LiveTracking() {
   const { bookingId } = useParams<{ bookingId: string }>();
@@ -426,7 +429,7 @@ export default function LiveTracking() {
     return () => unsub();
   }, [bookingId]);
 
-  // ── Washer profile + location listener ──────────────────────────────────
+  // ── Washer profile + location listener ────────────────────────────────
   useEffect(() => {
     if (!booking?.washerId) return;
 

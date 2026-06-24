@@ -2,16 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import {
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  X,
-  Loader2,
-  Droplets,
-} from 'lucide-react';
+import { Eye, EyeOff, Loader2, Mail, Lock, LogIn, ChevronRight, Droplets, Car, Zap, MapPin, CreditCard, Star, X, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 /* ─── Firebase error map ─────────────────────────────────────────────────── */
@@ -185,7 +176,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email.trim(), password);
-      toast.success('Welcome back! 👋');
+      toast.success('Welcome back!');
       navigate('/dashboard', { replace: true });
     } catch (err) {
       toast.error(parseError(err));
@@ -198,7 +189,7 @@ export default function LoginPage() {
     setGoogleLoading(true);
     try {
       await loginWithGoogle();
-      toast.success('Signed in with Google! 🎉');
+      toast.success('Signed in with Google!');
       navigate('/dashboard', { replace: true });
     } catch (err) {
       toast.error(parseError(err));
@@ -251,9 +242,8 @@ export default function LoginPage() {
             <motion.div
               animate={{ y: [0, -14, 0] }}
               transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
-              className="text-[100px] leading-none select-none drop-shadow-2xl"
             >
-              🚗
+              <Car size={96} className="text-primary drop-shadow-[0_0_30px_rgba(26,115,232,0.4)]" />
             </motion.div>
 
             <div>
@@ -272,16 +262,17 @@ export default function LoginPage() {
 
             <div className="flex flex-wrap gap-3 justify-center">
               {[
-                '⚡ Instant Booking',
-                '📍 GPS Tracked',
-                '💳 Pay Online',
-                '⭐ Rated Washers',
+                { label: 'Instant Booking', icon: <Zap size={14} className="text-primary" /> },
+                { label: 'GPS Tracked', icon: <MapPin size={14} className="text-primary" /> },
+                { label: 'Pay Online', icon: <CreditCard size={14} className="text-primary" /> },
+                { label: 'Rated Washers', icon: <Star size={14} className="text-primary" /> },
               ].map((feat) => (
                 <span
-                  key={feat}
-                  className="text-xs font-medium text-text-light bg-white/5 border border-white/10 rounded-full px-3.5 py-1.5"
+                  key={feat.label}
+                  className="flex items-center gap-1.5 text-xs font-medium text-text-light bg-white/5 border border-white/10 rounded-full px-3.5 py-1.5"
                 >
-                  {feat}
+                  {feat.icon}
+                  {feat.label}
                 </span>
               ))}
             </div>

@@ -48,7 +48,7 @@ export async function sendGeminiMessage(
     },
     {
       role: 'model',
-      parts: [{ text: 'Hello! I\'m DustHeist\'s AI assistant. How can I help you today? 🚗✨' }],
+      parts: [{ text: 'Hello! I\'m DustHeist\'s AI assistant. How can I help you today?' }],
     },
     ...history,
     {

@@ -18,7 +18,7 @@ export function AIChatbot() {
     {
       id: '0',
       role: 'assistant',
-      text: "Hey! 👋 I'm DustBot, your DustHeist assistant. Ask me anything about bookings, pricing, or services!",
+      text: "Hey! I'm DustBot, your DustHeist assistant. Ask me anything about bookings, pricing, or services!",
       timestamp: new Date(),
     },
   ]);

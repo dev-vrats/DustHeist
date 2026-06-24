@@ -15,6 +15,10 @@ import {
   Clock,
   Users,
   Droplets,
+  Smartphone,
+  Target,
+  Sparkles,
+  CheckCircle2,
 } from 'lucide-react';
 
 // ─── Animation Variants ────────────────────────────────────────────────────────
@@ -67,7 +71,7 @@ const services = [
     name: 'Basic Exterior',
     price: '₹99',
     duration: '~30 min',
-    icon: '🚿',
+    icon: <Droplets className="text-blue-500" />,
     popular: false,
     features: ['Exterior rinse & scrub', 'Wheel cleaning', 'Window wipe-down', 'Mirror polish'],
     gradient: 'from-blue-500/10 to-blue-600/5',
@@ -78,7 +82,7 @@ const services = [
     name: 'Premium Clean',
     price: '₹249',
     duration: '~45 min',
-    icon: '✨',
+    icon: <Sparkles className="text-primary" />,
     popular: true,
     features: ['Everything in Basic', 'Interior wipe-down', 'Air freshener', 'Tyre shine included'],
     gradient: 'from-primary/15 to-accent/10',
@@ -89,7 +93,7 @@ const services = [
     name: 'Deep Clean',
     price: '₹499',
     duration: '~90 min',
-    icon: '💎',
+    icon: <Zap className="text-purple-500" />,
     popular: false,
     features: ['Full interior vacuuming', 'Seat shampoo', 'Dashboard polish', 'Engine bay clean'],
     gradient: 'from-purple-500/10 to-pink-500/5',
@@ -99,23 +103,23 @@ const services = [
 ];
 
 const steps = [
-  { num: '01', icon: '📱', title: 'Book Service', desc: 'Pick your package & preferred slot in under 60 seconds.' },
-  { num: '02', icon: '🎯', title: 'Washer Assigned', desc: 'A verified washer near you is instantly matched.' },
-  { num: '03', icon: '🚗', title: 'Washer Arrives', desc: 'Track your washer live on the map. No waiting.' },
-  { num: '04', icon: '✨', title: 'Car Sparkling', desc: 'Rate & pay digitally. Spotless, every time.' },
+  { num: '01', icon: <Smartphone />, title: 'Book Service', desc: 'Pick your package & preferred slot in under 60 seconds.' },
+  { num: '02', icon: <Target />, title: 'Washer Assigned', desc: 'A verified washer near you is instantly matched.' },
+  { num: '03', icon: <Car />, title: 'Washer Arrives', desc: 'Track your washer live on the map. No waiting.' },
+  { num: '04', icon: <Sparkles />, title: 'Car Sparkling', desc: 'Rate & pay digitally. Spotless, every time.' },
 ];
 
 const addons = [
-  { icon: '🧹', name: 'Interior Vacuum', price: '₹99', desc: 'Deep suction for seats, mats & floor' },
-  { icon: '🔵', name: 'Tyre Shine', price: '₹49', desc: 'Glossy tyre dressing that lasts days' },
-  { icon: '🧽', name: 'Dashboard Polish', price: '₹79', desc: 'UV protectant for a showroom finish' },
-  { icon: '🪑', name: 'Seat Cleaning', price: '₹199', desc: 'Foam shampoo & stain removal' },
+  { icon: <CheckCircle2 />, name: 'Interior Vacuum', price: '₹99', desc: 'Deep suction for seats, mats & floor' },
+  { icon: <CheckCircle2 />, name: 'Tyre Shine', price: '₹49', desc: 'Glossy tyre dressing that lasts days' },
+  { icon: <CheckCircle2 />, name: 'Dashboard Polish', price: '₹79', desc: 'UV protectant for a showroom finish' },
+  { icon: <CheckCircle2 />, name: 'Seat Cleaning', price: '₹199', desc: 'Foam shampoo & stain removal' },
 ];
 
 const trustBadges = [
-  { icon: '✅', label: 'Verified Washers', color: 'from-accent/20 to-accent/5', border: 'border-accent/30', glow: 'shadow-[0_0_20px_rgba(0,200,83,0.15)]' },
-  { icon: '📍', label: 'Live Tracking', color: 'from-primary/20 to-primary/5', border: 'border-primary/30', glow: 'shadow-[0_0_20px_rgba(26,115,232,0.2)]' },
-  { icon: '🛡️', label: 'Insured Service', color: 'from-purple-500/20 to-purple-500/5', border: 'border-purple-500/30', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.15)]' },
+  { icon: <CheckCircle />, label: 'Verified Washers', color: 'from-accent/20 to-accent/5', border: 'border-accent/30', glow: '' },
+  { icon: <MapPin />, label: 'Live Tracking', color: 'from-primary/20 to-primary/5', border: 'border-primary/30', glow: '' },
+  { icon: <Shield />, label: 'Insured Service', color: 'from-purple-500/20 to-purple-500/5', border: 'border-purple-500/30', glow: '' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -292,7 +296,7 @@ export default function LandingPage() {
           <div className="relative w-72 sm:w-96 mx-auto">
             <div className="absolute inset-0 bg-gradient-to-b from-primary/20 to-transparent rounded-full blur-2xl scale-75 translate-y-8" />
             <div className="text-[9rem] sm:text-[12rem] text-center select-none filter drop-shadow-[0_0_40px_rgba(26,115,232,0.4)]">
-              🚗
+              <Car size={120} className="text-primary" />
             </div>
           </div>
           <div className="w-48 h-6 bg-primary/20 rounded-full blur-xl mx-auto -mt-4" />
@@ -327,9 +331,9 @@ export default function LandingPage() {
               >
                 {s.popular && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-primary to-blue-400 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-glow-blue whitespace-nowrap">
-                      ⭐ MOST POPULAR
-                    </span>
+                    <div className="bg-gradient-to-r from-accent to-emerald-400 text-dark-bg text-xs font-bold px-3 py-1 rounded-full shadow-[0_0_15px_rgba(0,200,83,0.3)]">
+                      <Star size={14} className="inline mr-1" /> MOST POPULAR
+                    </div>
                   </div>
                 )}
 
@@ -406,7 +410,7 @@ export default function LandingPage() {
                   )}
 
                   <div className="relative z-10 w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:shadow-[0_0_24px_rgba(26,115,232,0.35)] transition-all duration-300">
-                    <span className="text-3xl">{step.icon}</span>
+                    <div className="text-primary">{step.icon}</div>
                     <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                       <span className="text-white text-xs font-bold">{i + 1}</span>
                     </div>
@@ -494,31 +498,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── STATS BANNER ───────────────────────────────────────────────────── */}
-      <section className="py-12 px-4 sm:px-6 lg:px-12">
-        <div className="max-w-5xl mx-auto">
-          <RevealSection>
-            <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 to-dark-card shadow-[0_0_40px_rgba(26,115,232,0.15)]">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-              <div className="relative grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
-                {[
-                  { val: '500+', label: 'Washes Done', icon: <Droplets size={20} className="text-primary" /> },
-                  { val: '50+', label: 'Verified Washers', icon: <Users size={20} className="text-accent" /> },
-                  { val: '4.8★', label: 'Average Rating', icon: <Star size={20} className="fill-yellow-400 text-yellow-400" /> },
-                ].map((stat) => (
-                  <div key={stat.label} className="flex flex-col items-center justify-center py-10 px-8 gap-2 text-center">
-                    <div className="flex items-center gap-2 mb-1">{stat.icon}</div>
-                    <p className="text-4xl font-bold text-text-light">{stat.val}</p>
-                    <p className="text-muted text-sm">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </RevealSection>
-        </div>
-      </section>
-
       {/* ── FINAL CTA STRIP ────────────────────────────────────────────────── */}
       <section className="py-20 px-4 sm:px-6 lg:px-12">
         <div className="max-w-3xl mx-auto text-center">
@@ -526,7 +505,7 @@ export default function LandingPage() {
             <div className="glass-card p-10 sm:p-14 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/5 pointer-events-none" />
               <div className="relative">
-                <div className="text-5xl mb-4">🚗💦</div>
+                <Car size={64} className="text-primary mx-auto mb-4" />
                 <h2 className="text-3xl sm:text-4xl font-bold text-text-light mb-4">
                   Ready for a <span className="text-gradient-blue">spotless ride?</span>
                 </h2>
@@ -557,8 +536,8 @@ export default function LandingPage() {
             {/* Brand */}
             <div className="lg:col-span-1">
               <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center shadow-glow-blue">
-                  <span className="text-lg leading-none">💧</span>
+                <div className="bg-primary/10 p-2 rounded-xl border border-primary/20">
+                  <Droplets size={24} className="text-primary" />
                 </div>
                 <span className="text-xl font-bold text-text-light tracking-tight">
                   Dust<span className="text-gradient-blue">Heist</span>
@@ -650,7 +629,7 @@ export default function LandingPage() {
               © 2026 DustHeist. All rights reserved.
             </p>
             <p className="text-muted text-xs flex items-center gap-1">
-              Made with <span className="text-red-400 text-sm">❤️</span> by 3 college founders
+              Made with passion by 3 college founders
             </p>
             <div className="flex items-center gap-4">
               <Link to="/privacy" className="text-muted text-xs hover:text-primary transition-colors">Privacy Policy</Link>
