@@ -185,7 +185,7 @@ export default function ActiveJob() {
       });
 
       setShowPhotoModal(false);
-      if (booking.pricing?.paymentMethod === 'after_wash') {
+      if (booking?.pricing?.paymentMethod === 'after_wash') {
         setShowQRModal(true);
       } else {
         toast.success('Job completed! 🎉');

@@ -415,8 +415,8 @@ export default function WasherHome() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-card p-5 border border-primary/40 relative overflow-hidden group"
-            onClick={() => navigate(`/washer/booking/${activeBooking.id}`)}
+            className="glass-card p-5 border border-primary/40 relative overflow-hidden group cursor-pointer"
+            onClick={() => navigate(`/washer/job/${activeBooking.id}`)}
           >
             <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-100 transition-opacity">
               <Zap className="text-primary w-12 h-12 rotate-12" />
