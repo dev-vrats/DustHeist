@@ -162,17 +162,24 @@ export default function WasherHome() {
     if (!user?.uid) return;
     const q = query(
       collection(db, 'bookings'),
-      where('washerId', '==', user.uid),
-      where('status', 'in', ['accepted', 'enRoute', 'arrived', 'inProgress'])
+      where('washerId', '==', user.uid)
     );
-    const unsub = onSnapshot(q, (snap) => {
-      if (!snap.empty) {
-        const doc = snap.docs[0];
-        setActiveBooking({ id: doc.id, ...doc.data() } as Booking);
-      } else {
-        setActiveBooking(null);
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const activeDoc = snap.docs.find(doc => 
+          ['accepted', 'enRoute', 'arrived', 'inProgress'].includes(doc.data().status)
+        );
+        if (activeDoc) {
+          setActiveBooking({ id: activeDoc.id, ...activeDoc.data() } as Booking);
+        } else {
+          setActiveBooking(null);
+        }
+      },
+      (err) => {
+        console.error('Active job listener error:', err);
       }
-    });
+    );
     return () => unsub();
   }, [user?.uid]);
 
