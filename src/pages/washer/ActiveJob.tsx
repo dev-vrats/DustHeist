@@ -164,19 +164,21 @@ export default function ActiveJob() {
     if (!photoFile || !bookingId) return;
     setUploading(true);
     try {
-      const storageRef = ref(storage, `jobs/${bookingId}/after.jpg`);
-      const task = uploadBytesResumable(storageRef, photoFile);
-
-      await new Promise<void>((resolve, reject) => {
-        task.on(
-          'state_changed',
-          (snap) => setUploadProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)),
-          reject,
-          resolve,
-        );
+      const formData = new FormData();
+      formData.append('image', photoFile);
+      
+      const response = await fetch('https://api.imgbb.com/1/upload?key=f7a3c9fd52dcbbb94a18325f4f29f76d', {
+        method: 'POST',
+        body: formData,
       });
-
-      const url = await getDownloadURL(storageRef);
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error('ImgBB upload failed');
+      }
+      
+      const url = data.data.url;
       await updateDoc(doc(db, 'bookings', bookingId), {
         status: 'completed',
         'checklist.completed': true,

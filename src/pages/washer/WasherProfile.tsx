@@ -34,32 +34,34 @@ export default function WasherProfile() {
     }
 
     setUploading(true);
-    const storageRef = ref(storage, `profilePics/${user.uid}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on(
-      'state_changed',
-      (snap) => console.log('Upload progress:', (snap.bytesTransferred / snap.totalBytes) * 100),
-      (error) => {
-        toast.error('Failed to upload image');
-        console.error(error);
-        setUploading(false);
-      },
-      async () => {
-        try {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          await updateDoc(doc(db, 'users', user.uid), { profilePic: downloadURL });
-          await updateDoc(doc(db, 'washers', user.uid), { profilePic: downloadURL });
-          await refreshProfile();
-          toast.success('Profile picture updated!');
-        } catch (error) {
-          toast.error('Failed to save profile picture URL');
-          console.error(error);
-        } finally {
-          setUploading(false);
-        }
+    setUploading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      const response = await fetch('https://api.imgbb.com/1/upload?key=f7a3c9fd52dcbbb94a18325f4f29f76d', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        const downloadURL = data.data.url;
+        await updateDoc(doc(db, 'users', user.uid), { profilePic: downloadURL });
+        await updateDoc(doc(db, 'washers', user.uid), { profilePic: downloadURL });
+        await refreshProfile();
+        toast.success('Profile picture updated!');
+      } else {
+        throw new Error('ImgBB upload failed');
       }
-    );
+    } catch (error) {
+      toast.error('Failed to upload image');
+      console.error(error);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const initials = profile?.name
