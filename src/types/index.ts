@@ -78,7 +78,7 @@ export interface Booking {
     addOns: number;
     discount: number;
     total: number;
-    paymentMethod: 'upi' | 'cash' | 'card';
+    paymentMethod: 'before_wash' | 'after_wash';
     paymentStatus: 'pending' | 'paid';
   };
   checklist: {

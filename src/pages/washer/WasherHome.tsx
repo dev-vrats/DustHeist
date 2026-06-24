@@ -143,7 +143,7 @@ export default function WasherHome() {
           booking.customerLocation.lat, booking.customerLocation.lng,
         );
 
-        if (dist <= 5) {
+        if (dist <= 50) {
           setIncomingJob((prev) => {
             if (prev?.id === booking.id) return prev;
             setCountdown(COUNTDOWN_SECONDS);

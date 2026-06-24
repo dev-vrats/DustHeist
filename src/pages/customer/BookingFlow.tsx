@@ -23,7 +23,7 @@ import type { Vehicle, Coupon } from '@/types';
 type ServiceType = keyof typeof SERVICE_PRICES;
 type PlanType = keyof typeof PLAN_DISCOUNTS;
 type AddOnKey = keyof typeof ADDON_PRICES;
-type PaymentMethod = 'upi' | 'cash' | 'card';
+type PaymentMethod = 'before_wash' | 'after_wash';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STEP_LABELS = [
@@ -128,7 +128,7 @@ export default function BookingFlow() {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
   // Step 4
-  const [formattedAddress, setFormattedAddress] = useState('MG Road, Bengaluru, Karnataka 560001');
+  const [formattedAddress, setFormattedAddress] = useState('');
   const [changeAddress, setChangeAddress] = useState(false);
   const [newAddress, setNewAddress] = useState('');
   const [extraDetails, setExtraDetails] = useState('');
@@ -139,13 +139,40 @@ export default function BookingFlow() {
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState<Coupon | null>(null);
   const [couponLoading, setCouponLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('upi');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('after_wash');
 
   // Step 6
   const [bookingId, setBookingId] = useState('');
   const [firestoreDocId, setFirestoreDocId] = useState('');
   const [washerFound, setWasherFound] = useState<{ id: string; name: string } | null>(null);
   const [confirming, setConfirming] = useState(false);
+
+  // Auto-fetch location
+  useEffect(() => {
+    if (step === 4 && !formattedAddress && navigator.geolocation) {
+      setFormattedAddress('Acquiring location...');
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+            const data = await res.json();
+            if (data && data.display_name) {
+              setFormattedAddress(data.display_name);
+            } else {
+              setFormattedAddress('Location detected (GPS)');
+            }
+          } catch (e) {
+            setFormattedAddress('Location detected (GPS)');
+          }
+        },
+        () => {
+          setFormattedAddress('Could not fetch location automatically');
+        },
+        { enableHighAccuracy: true, timeout: 15000 }
+      );
+    }
+  }, [step, formattedAddress]);
 
   // Load vehicles
   useEffect(() => {
@@ -1067,20 +1094,20 @@ function Step5Payment({
       <div className="glass-card p-4 space-y-3">
         <p className="text-sm font-semibold text-text-light">Payment Method</p>
 
-        {/* UPI */}
+        {/* Pay Before Wash */}
         <button
-          onClick={() => onPaymentMethodChange('upi')}
+          onClick={() => onPaymentMethodChange('before_wash')}
           className={`w-full p-3 rounded-xl border-2 transition-all duration-200 text-left ${
-            paymentMethod === 'upi' ? 'border-primary bg-primary/10' : 'border-dark-border hover:border-primary/40'
+            paymentMethod === 'before_wash' ? 'border-primary bg-primary/10' : 'border-dark-border hover:border-primary/40'
           }`}
         >
           <div className="flex items-center gap-3 mb-2">
             <Smartphone size={16} className="text-primary" />
-            <span className="text-sm font-semibold text-text-light">UPI</span>
-            {paymentMethod === 'upi' && <CheckCircle2 size={16} className="text-primary ml-auto" />}
+            <span className="text-sm font-semibold text-text-light">Pay Before Wash (Online)</span>
+            {paymentMethod === 'before_wash' && <CheckCircle2 size={16} className="text-primary ml-auto" />}
           </div>
           <AnimatePresence>
-            {paymentMethod === 'upi' && (
+            {paymentMethod === 'before_wash' && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1107,34 +1134,19 @@ function Step5Payment({
           </AnimatePresence>
         </button>
 
-        {/* Cash */}
+        {/* Pay After Wash */}
         <button
-          onClick={() => onPaymentMethodChange('cash')}
+          onClick={() => onPaymentMethodChange('after_wash')}
           className={`w-full p-3 rounded-xl border-2 transition-all duration-200 flex items-center gap-3 ${
-            paymentMethod === 'cash' ? 'border-accent bg-accent/10' : 'border-dark-border hover:border-accent/40'
+            paymentMethod === 'after_wash' ? 'border-accent bg-accent/10' : 'border-dark-border hover:border-accent/40'
           }`}
         >
           <Banknote size={16} className="text-accent" />
           <div className="text-left">
-            <p className="text-sm font-semibold text-text-light">Cash on Delivery</p>
-            <p className="text-xs text-muted">Pay when the washer arrives</p>
+            <p className="text-sm font-semibold text-text-light">Pay After Wash</p>
+            <p className="text-xs text-muted">Pay the washer directly via Cash or UPI after service</p>
           </div>
-          {paymentMethod === 'cash' && <CheckCircle2 size={16} className="text-accent ml-auto" />}
-        </button>
-
-        {/* Card */}
-        <button
-          onClick={() => onPaymentMethodChange('card')}
-          className={`w-full p-3 rounded-xl border-2 transition-all duration-200 flex items-center gap-3 ${
-            paymentMethod === 'card' ? 'border-primary bg-primary/10' : 'border-dark-border hover:border-primary/40'
-          }`}
-        >
-          <CreditCard size={16} className="text-primary" />
-          <div className="text-left">
-            <p className="text-sm font-semibold text-text-light">Card</p>
-            <p className="text-xs text-muted">Debit / Credit / NetBanking</p>
-          </div>
-          {paymentMethod === 'card' && <CheckCircle2 size={16} className="text-primary ml-auto" />}
+          {paymentMethod === 'after_wash' && <CheckCircle2 size={16} className="text-accent ml-auto" />}
         </button>
       </div>
     </div>
