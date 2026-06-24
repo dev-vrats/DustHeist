@@ -9,6 +9,9 @@ import {
 import {
   collection, query, where, onSnapshot, orderBy, limit,
 } from 'firebase/firestore';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/firebase';
@@ -49,11 +52,31 @@ const SERVICES = [
   },
 ];
 
-const NEARBY_WASHERS = [
-  { id: 'w1', name: 'Ravi K.', rating: 4.9, dist: '0.4', x: 28, y: 38 },
-  { id: 'w2', name: 'Mohan S.', rating: 4.7, dist: '1.2', x: 62, y: 52 },
-  { id: 'w3', name: 'Arjun T.', rating: 4.8, dist: '2.1', x: 75, y: 25 },
-];
+// Remove fake washers array
+function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+const customerIcon = new L.DivIcon({
+  className: 'custom-icon',
+  html: `<div class="w-4 h-4 rounded-full bg-primary border-2 border-white shadow-lg"></div>`,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+});
+
+const washerIcon = new L.DivIcon({
+  className: 'custom-icon',
+  html: `<div class="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-emerald-600 border-2 border-white/30 flex items-center justify-center shadow-lg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-car"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></div>`,
+  iconSize: [36, 36],
+  iconAnchor: [18, 18],
+});
 
 const TABS = [
   { id: 'home', label: 'Home', icon: Home, path: '/customer' },
@@ -75,9 +98,11 @@ export default function CustomerHome() {
 
   const [city, setCity] = useState('Detecting…');
   const [address, setAddress] = useState('Fetching your location…');
+  const [customerLocation, setCustomerLocation] = useState<{lat: number; lng: number} | null>(null);
   const [extraDetails, setExtraDetails] = useState('');
   const [showDetailsInput, setShowDetailsInput] = useState(false);
   const [activeBookings, setActiveBookings] = useState<Booking[]>([]);
+  const [nearbyWashers, setNearbyWashers] = useState<any[]>([]);
   const [selectedWasher, setSelectedWasher] = useState<string | null>(null);
   const detailsRef = useRef<HTMLInputElement>(null);
 
@@ -90,6 +115,7 @@ export default function CustomerHome() {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
+        setCustomerLocation({ lat: latitude, lng: longitude });
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
@@ -144,6 +170,27 @@ export default function CustomerHome() {
   useEffect(() => {
     if (showDetailsInput) setTimeout(() => detailsRef.current?.focus(), 50);
   }, [showDetailsInput]);
+
+  useEffect(() => {
+    if (!customerLocation) return;
+    const q = query(collection(db, 'washers'), where('isOnline', '==', true));
+    const unsub = onSnapshot(q, (snap) => {
+      const washers = snap.docs.map(doc => {
+        const data = doc.data();
+        const dist = data.currentLocation ? getDistance(customerLocation.lat, customerLocation.lng, data.currentLocation.lat, data.currentLocation.lng) : 999;
+        return {
+          id: doc.id,
+          name: data.name || 'Washer',
+          rating: data.rating || 4.5,
+          lat: data.currentLocation?.lat,
+          lng: data.currentLocation?.lng,
+          dist: dist.toFixed(1)
+        };
+      }).filter(w => w.lat && w.lng && parseFloat(w.dist) < 50); // within 50km
+      setNearbyWashers(washers.sort((a, b) => parseFloat(a.dist) - parseFloat(b.dist)));
+    });
+    return unsub;
+  }, [customerLocation]);
 
   const customerProfile = profile as CustomerProfile | null;
   const sub = customerProfile?.activeSubscription;
@@ -301,40 +348,45 @@ export default function CustomerHome() {
               <h2 className="text-base font-semibold text-text-light">Nearby Washers</h2>
               <div className="flex items-center gap-1.5">
                 <StatusDot status="online" size="sm" />
-                <span className="text-xs text-accent font-medium">3 online</span>
+                <span className="text-xs text-accent font-medium">{nearbyWashers.length} online</span>
               </div>
             </div>
-            <div className="relative mx-4 mb-4 h-48 rounded-xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-              <svg className="absolute inset-0 w-full h-full opacity-15" viewBox="0 0 320 192">
-                {[0, 1, 2, 3, 4].map((i) => (<line key={`h${i}`} x1="0" y1={i * 48} x2="320" y2={i * 48} stroke="#475569" strokeWidth="0.5" />))}
-                {[0, 1, 2, 3, 4, 5].map((i) => (<line key={`v${i}`} x1={i * 64} y1="0" x2={i * 64} y2="192" stroke="#475569" strokeWidth="0.5" />))}
-                <line x1="0" y1="96" x2="320" y2="96" stroke="#1A73E8" strokeWidth="2.5" strokeDasharray="12 4" />
-                <line x1="160" y1="0" x2="160" y2="192" stroke="#1A73E8" strokeWidth="2" strokeDasharray="8 4" />
-              </svg>
-              {NEARBY_WASHERS.map((w) => (
-                <motion.button key={w.id} onClick={() => setSelectedWasher(selectedWasher === w.id ? null : w.id)} animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 2.5, delay: parseInt(w.id.slice(1)) * 0.6 }} style={{ left: `${w.x}%`, top: `${w.y}%` }} className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10">
-                  <div className="relative">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-emerald-600 border-2 border-white/30 flex items-center justify-center shadow-lg"><Car size={16} className="text-white" /></div>
-                    <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-accent border border-dark-bg animate-ping opacity-75" />
-                    <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-accent border border-dark-bg" />
-                  </div>
-                  <div className="mt-1 bg-dark-card/90 backdrop-blur-sm px-2 py-0.5 rounded-full border border-dark-border">
-                    <span className="text-[10px] text-text-light font-medium">{w.dist} km</span>
-                  </div>
-                </motion.button>
-              ))}
-              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                <div className="w-4 h-4 rounded-full bg-primary border-2 border-white shadow-lg" />
-                <div className="absolute inset-0 w-4 h-4 rounded-full bg-primary animate-ping opacity-30" />
-              </div>
+            <div className="relative mx-4 mb-4 h-48 rounded-xl overflow-hidden bg-slate-900 border border-dark-border z-0">
+              {customerLocation ? (
+                <MapContainer 
+                  center={[customerLocation.lat, customerLocation.lng]} 
+                  zoom={13} 
+                  style={{ width: '100%', height: '100%' }}
+                  zoomControl={false}
+                  attributionControl={false}
+                >
+                  <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+                  <Marker position={[customerLocation.lat, customerLocation.lng]} icon={customerIcon} />
+                  {nearbyWashers.map(w => (
+                    <Marker 
+                      key={w.id} 
+                      position={[w.lat, w.lng]} 
+                      icon={washerIcon}
+                      eventHandlers={{ click: () => setSelectedWasher(selectedWasher === w.id ? null : w.id) }}
+                    />
+                  ))}
+                </MapContainer>
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-muted">
+                  <Navigation className="w-8 h-8 animate-spin text-primary/50 mb-2" />
+                  <span className="text-xs">Locating...</span>
+                </div>
+              )}
+              
               <AnimatePresence>
                 {selectedWasher && (() => {
-                  const w = NEARBY_WASHERS.find((x) => x.id === selectedWasher)!;
+                  const w = nearbyWashers.find((x) => x.id === selectedWasher);
+                  if (!w) return null;
                   return (
-                    <motion.div key="card" initial={{ opacity: 0, y: 8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.95 }} className="absolute bottom-3 left-3 right-3 bg-dark-card/95 backdrop-blur-md rounded-xl border border-dark-border p-3 flex items-center justify-between z-20">
+                    <motion.div key="card" initial={{ opacity: 0, y: 8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.95 }} className="absolute bottom-3 left-3 right-3 bg-dark-card/95 backdrop-blur-md rounded-xl border border-dark-border p-3 flex items-center justify-between z-[1000]">
                       <div className="flex items-center gap-2.5">
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center">
-                          <span className="text-xs font-bold text-white">{w.name.split(' ').map((n) => n[0]).join('')}</span>
+                          <span className="text-xs font-bold text-white">{w.name.split(' ').map((n: string) => n[0]).join('')}</span>
                         </div>
                         <div>
                           <p className="text-xs font-semibold text-text-light">{w.name}</p>

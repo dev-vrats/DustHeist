@@ -19,6 +19,9 @@ import {
   Sparkles,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -329,58 +332,45 @@ function TimelineStep({
   );
 }
 
-// ─── Google Maps (lazy-loaded) ───────────────────────────────────────────────
+// ─── Map View (Leaflet) ───────────────────────────────────────────────────────────────
 
-function GoogleMapView({
-  apiKey,
+const customerIcon = new L.DivIcon({
+  className: 'custom-icon',
+  html: `<div class="w-10 h-10 rounded-full bg-accent/20 border-2 border-accent flex items-center justify-center shadow-lg"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>`,
+  iconSize: [40, 40],
+  iconAnchor: [20, 20],
+});
+
+const washerIcon = new L.DivIcon({
+  className: 'custom-icon',
+  html: `<div class="w-10 h-10 rounded-full bg-warning-500/20 border-2 border-warning-500 flex items-center justify-center shadow-lg"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-car"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></div>`,
+  iconSize: [40, 40],
+  iconAnchor: [20, 20],
+});
+
+function LiveMapView({
   customerLocation,
   washerLocation,
 }: {
-  apiKey: string;
   customerLocation: Booking['customerLocation'];
   washerLocation: { lat: number; lng: number } | null;
 }) {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [GoogleMap, setGoogleMap] = useState<React.ComponentType<any> | null>(null);
-  const [Marker, setMarker] = useState<React.ComponentType<any> | null>(null);
-
-  useEffect(() => {
-    import('@react-google-maps/api').then((mod) => {
-      setGoogleMap(() => mod.GoogleMap);
-      setMarker(() => mod.Marker);
-      setIsLoaded(true);
-    }).catch(() => setIsLoaded(false));
-  }, []);
-
-  if (!isLoaded || !GoogleMap || !Marker) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-dark-bg">
-        <Navigation className="w-8 h-8 text-primary animate-spin" />
-      </div>
-    );
-  }
-
   const center = { lat: customerLocation.lat, lng: customerLocation.lng };
-  const darkStyle = [
-    { elementType: 'geometry', stylers: [{ color: '#1E293B' }] },
-    { elementType: 'labels.text.fill', stylers: [{ color: '#94A3B8' }] },
-    { elementType: 'labels.text.stroke', stylers: [{ color: '#0F172A' }] },
-    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#334155' }] },
-    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0F172A' }] },
-    { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-    { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-  ];
 
   return (
-    <GoogleMap
-      mapContainerStyle={{ width: '100%', height: '100%' }}
-      center={center}
-      zoom={14}
-      options={{ disableDefaultUI: true, styles: darkStyle, gestureHandling: 'cooperative' }}
-    >
-      <Marker position={center} />
-      {washerLocation && <Marker position={washerLocation} />}
-    </GoogleMap>
+    <div className="w-full h-full relative z-0">
+      <MapContainer 
+        center={[center.lat, center.lng]} 
+        zoom={14} 
+        style={{ width: '100%', height: '100%' }}
+        zoomControl={false}
+        attributionControl={false}
+      >
+        <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+        <Marker position={[center.lat, center.lng]} icon={customerIcon} />
+        {washerLocation && <Marker position={[washerLocation.lat, washerLocation.lng]} icon={washerIcon} />}
+      </MapContainer>
+    </div>
   );
 }
 
@@ -560,9 +550,8 @@ export default function LiveTracking() {
 
       {/* ── MAP AREA — top 60% ─────────────────────────────────────────── */}
       <div className="relative flex-shrink-0" style={{ height: '60%' }}>
-        {googleMapsKey ? (
-          <GoogleMapView
-            apiKey={googleMapsKey}
+        {booking.customerLocation ? (
+          <LiveMapView
             customerLocation={booking.customerLocation}
             washerLocation={washerLocation}
           />
