@@ -59,6 +59,7 @@ export default function WasherHome() {
   const [stats, setStats] = useState<EarningStat>({ todayEarnings: 0, todayJobs: 0, weekEarnings: 0 });
   const [recentJobs, setRecentJobs] = useState<Booking[]>([]);
   const [incomingJob, setIncomingJob] = useState<IncomingJob | null>(null);
+  const [activeBooking, setActiveBooking] = useState<Booking | null>(null);
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   const [skippedIds, setSkippedIds] = useState<Set<string>>(new Set());
 
@@ -155,6 +156,25 @@ export default function WasherHome() {
     });
     return () => unsub();
   }, [user?.uid, isOnline, skippedIds]);
+
+  // ── Active job listener ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (!user?.uid) return;
+    const q = query(
+      collection(db, 'bookings'),
+      where('washerId', '==', user.uid),
+      where('status', 'in', ['accepted', 'enRoute', 'arrived', 'inProgress'])
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      if (!snap.empty) {
+        const doc = snap.docs[0];
+        setActiveBooking({ id: doc.id, ...doc.data() } as Booking);
+      } else {
+        setActiveBooking(null);
+      }
+    });
+    return () => unsub();
+  }, [user?.uid]);
 
   // ── Countdown timer ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -382,6 +402,39 @@ export default function WasherHome() {
             </span>
           )}
         </div>
+
+        {/* ── Active Job Card ────────────────────────────────────────────── */}
+        {activeBooking && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card p-5 border border-primary/40 relative overflow-hidden group"
+            onClick={() => navigate(`/washer/booking/${activeBooking.id}`)}
+          >
+            <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-100 transition-opacity">
+              <Zap className="text-primary w-12 h-12 rotate-12" />
+            </div>
+            <div className="flex items-center gap-3 mb-2 relative z-10">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
+                <Car className="text-primary w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-text-light font-bold text-lg leading-tight">Active Wash</h3>
+                <p className="text-primary text-xs font-semibold uppercase tracking-wider">
+                  Status: {activeBooking.status}
+                </p>
+              </div>
+            </div>
+            <div className="relative z-10 mt-3 flex items-center justify-between">
+              <p className="text-sm text-muted line-clamp-1 flex-1">
+                {activeBooking.customerLocation?.formattedAddress || 'Location pending'}
+              </p>
+              <button className="px-4 py-1.5 bg-primary text-white rounded-full text-xs font-bold shadow-lg shadow-primary/30">
+                Resume
+              </button>
+            </div>
+          </motion.div>
+        )}
 
         {/* ── Earnings Card ─────────────────────────────────────────────── */}
         <div className="glass-card p-5">

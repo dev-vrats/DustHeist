@@ -232,6 +232,12 @@ export default function CustomerHome() {
               <div>
                 <p className="text-xs text-muted">{getGreeting()}</p>
                 <p className="text-sm font-semibold text-text-light">Hey {firstName}</p>
+                {customerProfile?.vehicles?.[0] && (
+                  <div className="flex items-center gap-1 text-[10px] text-muted mt-0.5 font-medium">
+                    <Car size={10} className="text-primary" />
+                    <span>{customerProfile.vehicles[0].make} {customerProfile.vehicles[0].model} • <span className="uppercase text-text-light/80">{customerProfile.vehicles[0].plate}</span></span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-3">

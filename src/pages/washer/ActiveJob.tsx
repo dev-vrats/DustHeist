@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import QRCode from 'react-qr-code';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import {
@@ -69,6 +70,7 @@ export default function ActiveJob() {
   const [sendingMsg, setSendingMsg] = useState(false);
 
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -182,8 +184,12 @@ export default function ActiveJob() {
         completedAt: serverTimestamp(),
       });
 
-      toast.success('Job completed! 🎉');
       setShowPhotoModal(false);
+      if (booking.pricing?.paymentMethod === 'after_wash') {
+        setShowQRModal(true);
+      } else {
+        toast.success('Job completed! 🎉');
+      }
     } catch {
       toast.error('Upload failed. Please try again.');
     } finally {

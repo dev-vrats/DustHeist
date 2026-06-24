@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Camera, LogOut, Loader2, User, Mail, Calendar, Settings, ChevronRight, HelpCircle, FileText, Car, Edit2 } from 'lucide-react';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +15,12 @@ export default function CustomerProfile() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [showVehicleModal, setShowVehicleModal] = useState(false);
+  const [vMake, setVMake] = useState('');
+  const [vModel, setVModel] = useState('');
+  const [vColor, setVColor] = useState('');
+  const [vPlate, setVPlate] = useState('');
+  const [addingVehicle, setAddingVehicle] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -39,7 +46,7 @@ export default function CustomerProfile() {
 
     uploadTask.on(
       'state_changed',
-      null,
+      (snap) => console.log('Upload progress:', (snap.bytesTransferred / snap.totalBytes) * 100),
       (error) => {
         toast.error('Failed to upload image');
         console.error(error);
@@ -60,6 +67,35 @@ export default function CustomerProfile() {
         }
       }
     );
+  };
+
+  const handleAddVehicle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!vMake.trim() || !vModel.trim() || !vColor.trim() || !vPlate.trim() || !user) {
+      toast.error('All fields are required');
+      return;
+    }
+    setAddingVehicle(true);
+    try {
+      const newVehicle = {
+        id: Math.random().toString(36).slice(2, 11),
+        make: vMake.trim(),
+        model: vModel.trim(),
+        color: vColor.trim(),
+        plate: vPlate.trim().toUpperCase(),
+      };
+      await updateDoc(doc(db, 'customers', user.uid), {
+        vehicles: arrayUnion(newVehicle),
+      });
+      toast.success('Vehicle added!');
+      setShowVehicleModal(false);
+      setVMake(''); setVModel(''); setVColor(''); setVPlate('');
+      await refreshProfile();
+    } catch {
+      toast.error('Failed to add vehicle');
+    } finally {
+      setAddingVehicle(false);
+    }
   };
 
   const initials = profile?.name
@@ -156,7 +192,7 @@ export default function CustomerProfile() {
         {/* Vehicles Section */}
         <div className="flex items-center justify-between mt-8 mb-2">
           <h3 className="text-xs font-semibold text-muted uppercase tracking-widest px-1">Your Vehicles</h3>
-          <button onClick={() => toast("Add vehicle coming soon in next update!")} className="text-xs text-primary font-medium hover:underline">Add New</button>
+          <button onClick={() => setShowVehicleModal(true)} className="text-xs text-primary font-medium hover:underline">Add New</button>
         </div>
         <div className="glass-card p-4">
           {(profile as any)?.vehicles?.length > 0 ? (
@@ -182,7 +218,7 @@ export default function CustomerProfile() {
             <div className="text-center py-4">
               <Car size={24} className="text-muted mx-auto mb-2 opacity-50" />
               <p className="text-sm text-muted">No vehicles added yet.</p>
-              <button onClick={() => toast("Add vehicle coming soon in next update!")} className="text-xs font-medium text-primary mt-2">Add your first vehicle</button>
+              <button onClick={() => setShowVehicleModal(true)} className="text-xs font-medium text-primary mt-2">Add your first vehicle</button>
             </div>
           )}
         </div>
@@ -215,6 +251,51 @@ export default function CustomerProfile() {
           Sign Out
         </motion.button>
       </div>
+
+      {/* ── Add Vehicle Modal ────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showVehicleModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+              className="bg-dark-card border border-dark-border rounded-3xl p-6 w-full max-w-sm"
+            >
+              <h2 className="text-text-light font-bold text-xl mb-4 text-center">Add Vehicle</h2>
+              <form onSubmit={handleAddVehicle} className="space-y-4">
+                <input
+                  type="text" placeholder="Make (e.g. Honda)"
+                  value={vMake} onChange={e => setVMake(e.target.value)}
+                  className="input-field w-full"
+                />
+                <input
+                  type="text" placeholder="Model (e.g. Civic)"
+                  value={vModel} onChange={e => setVModel(e.target.value)}
+                  className="input-field w-full"
+                />
+                <input
+                  type="text" placeholder="Color (e.g. Blue)"
+                  value={vColor} onChange={e => setVColor(e.target.value)}
+                  className="input-field w-full"
+                />
+                <input
+                  type="text" placeholder="License Plate"
+                  value={vPlate} onChange={e => setVPlate(e.target.value)}
+                  className="input-field w-full uppercase"
+                />
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setShowVehicleModal(false)} className="flex-1 py-3 bg-dark-bg text-muted font-bold rounded-xl">Cancel</button>
+                  <button type="submit" disabled={addingVehicle} className="flex-1 py-3 bg-primary text-white font-bold rounded-xl disabled:opacity-50">
+                    {addingVehicle ? 'Adding...' : 'Add Vehicle'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

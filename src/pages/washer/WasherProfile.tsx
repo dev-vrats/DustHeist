@@ -39,7 +39,7 @@ export default function WasherProfile() {
 
     uploadTask.on(
       'state_changed',
-      null,
+      (snap) => console.log('Upload progress:', (snap.bytesTransferred / snap.totalBytes) * 100),
       (error) => {
         toast.error('Failed to upload image');
         console.error(error);
