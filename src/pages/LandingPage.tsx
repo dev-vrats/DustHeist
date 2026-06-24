@@ -183,16 +183,7 @@ export default function LandingPage() {
           aria-hidden="true"
         />
 
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-4 py-1.5 text-sm text-accent font-medium mb-6 shadow-[0_0_20px_rgba(0,200,83,0.1)]"
-        >
-          <span className="w-2 h-2 rounded-full bg-accent animate-pulse-dot" />
-          500+ Happy Customers & Counting
-        </motion.div>
+        {/* Badge removed as requested */}
 
         {/* Headline */}
         <motion.h1
@@ -258,33 +249,6 @@ export default function LandingPage() {
             <Car size={18} />
             Become a Washer
           </Link>
-        </motion.div>
-
-        {/* Social proof row */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-10 flex items-center gap-4 justify-center flex-wrap"
-        >
-          <div className="flex -space-x-3">
-            {['🧑', '👩', '👨', '🧑‍💼', '👩‍💼'].map((emoji, i) => (
-              <div
-                key={i}
-                className="w-9 h-9 rounded-full border-2 border-dark-bg bg-dark-card flex items-center justify-center text-base shadow"
-              >
-                {emoji}
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col text-left">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={14} className="fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-            <p className="text-xs text-muted">Loved by 500+ customers</p>
-          </div>
         </motion.div>
 
         {/* Floating car animation */}

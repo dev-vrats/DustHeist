@@ -65,11 +65,11 @@ export function AIChatbot() {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, assistantMsg]);
-    } catch {
+    } catch (error: any) {
       const errMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        text: 'Sorry, I ran into an issue. Please try again or call us at +91-98765-43210.',
+        text: `Oops! There was an issue connecting to the AI: ${error.message}. Please verify your API key or call us at +91-98765-43210.`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errMsg]);

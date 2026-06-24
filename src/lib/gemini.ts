@@ -64,7 +64,8 @@ export async function sendGeminiMessage(
   });
 
   if (!response.ok) {
-    throw new Error(`Gemini API error: ${response.status}`);
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error?.message || `Gemini API error: ${response.status}`);
   }
 
   const data = await response.json();
