@@ -74,8 +74,7 @@ export default function BookingHistory() {
     if (!user) return;
     const q = query(
       collection(db, 'bookings'),
-      where('customerId', '==', user.uid),
-      orderBy('createdAt', 'desc')
+      where('customerId', '==', user.uid)
     );
     const unsub = onSnapshot(q, (snap) => {
       const docs = snap.docs.map((d) => ({
@@ -88,7 +87,12 @@ export default function BookingHistory() {
             ? 'asap'
             : d.data().scheduledTime?.toDate?.() ?? 'asap',
       })) as Booking[];
+      
+      docs.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
       setBookings(docs);
+      setLoading(false);
+    }, (err) => {
+      console.error(err);
       setLoading(false);
     });
     return unsub;

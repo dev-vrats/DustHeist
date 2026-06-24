@@ -163,6 +163,13 @@ export default function ActiveJob() {
   const handlePhotoUpload = async () => {
     if (!photoFile || !bookingId) return;
     setUploading(true);
+    setUploadProgress(10);
+    
+    // Fake progress interval since fetch doesn't provide upload progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => prev < 90 ? prev + 15 : prev);
+    }, 500);
+
     try {
       const formData = new FormData();
       formData.append('image', photoFile);
@@ -178,6 +185,9 @@ export default function ActiveJob() {
         throw new Error('ImgBB upload failed');
       }
       
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
       const url = data.data.url;
       await updateDoc(doc(db, 'bookings', bookingId), {
         status: 'completed',
@@ -192,11 +202,13 @@ export default function ActiveJob() {
       } else {
         toast.success('Job completed! 🎉');
       }
-    } catch {
+    } catch (err) {
+      console.error('Upload Error:', err);
       toast.error('Upload failed. Please try again.');
     } finally {
+      clearInterval(progressInterval);
       setUploading(false);
-      setUploadProgress(0);
+      setTimeout(() => setUploadProgress(0), 1000);
     }
   };
 
