@@ -275,7 +275,7 @@ export default function WasherHome() {
   }, []);
 
   const washerName = profile?.name ?? 'Washer';
-  const rating = profile?.rating ?? 5.0;
+  const rating = profile?.rating ?? 0;
 
   return (
     <div className="min-h-screen bg-dark-bg pb-24">
@@ -306,11 +306,11 @@ export default function WasherHome() {
             <div>
               <p className="text-xs text-muted">Welcome back</p>
               <h1 className="text-text-light font-bold text-lg leading-tight">{washerName}</h1>
-              <div className="flex items-center gap-1 mt-0.5">
+              <div className="flex items-center gap-0.5 mt-0.5">
                 {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} size={11} className={s <= Math.round(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted'} />
+                  <Star key={s} size={11} className={s <= Math.round(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted/50'} />
                 ))}
-                <span className="text-xs text-muted ml-1">{rating.toFixed(1)}</span>
+                <span className="text-xs text-muted ml-1">{rating ? rating.toFixed(1) : 'New'}</span>
               </div>
             </div>
           </div>
@@ -408,10 +408,10 @@ export default function WasherHome() {
             </div>
             <div className="bg-dark-bg/60 rounded-xl p-3 text-center">
               <p className="text-muted text-xs mb-1">Rating</p>
-              <p className="text-yellow-400 font-bold text-lg">{rating.toFixed(1)}</p>
+              <p className="text-yellow-400 font-bold text-lg">{rating ? rating.toFixed(1) : 'New'}</p>
               <div className="flex items-center justify-center gap-0.5 mt-1">
                 {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} size={8} className={s <= Math.round(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted'} />
+                  <Star key={s} size={8} className={s <= Math.round(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted/50'} />
                 ))}
               </div>
             </div>

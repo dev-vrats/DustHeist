@@ -129,6 +129,7 @@ export default function BookingFlow() {
 
   // Step 4
   const [formattedAddress, setFormattedAddress] = useState('');
+  const [customerCoords, setCustomerCoords] = useState<{lat: number, lng: number} | null>(null);
   const [changeAddress, setChangeAddress] = useState(false);
   const [newAddress, setNewAddress] = useState('');
   const [extraDetails, setExtraDetails] = useState('');
@@ -154,6 +155,7 @@ export default function BookingFlow() {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords;
+          setCustomerCoords({ lat: latitude, lng: longitude });
           try {
             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
             const data = await res.json();
@@ -294,8 +296,8 @@ export default function BookingFlow() {
         scheduledTime,
         status: 'pending',
         customerLocation: {
-          lat: 12.9716,
-          lng: 77.5946,
+          lat: customerCoords?.lat || 12.9716,
+          lng: customerCoords?.lng || 77.5946,
           formattedAddress: address,
           extraDetails: extraDetails.trim() || null,
         },

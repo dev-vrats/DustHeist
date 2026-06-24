@@ -124,7 +124,7 @@ export default function WasherProfile() {
             <div className="w-8 h-8 rounded-full bg-yellow-500/10 flex items-center justify-center mb-2">
               <Star size={16} className="text-yellow-500" />
             </div>
-            <p className="text-xl font-bold text-text-light">{(profile as any)?.rating?.toFixed(1) || '5.0'}</p>
+            <p className="text-xl font-bold text-text-light">{(profile as any)?.rating ? (profile as any).rating.toFixed(1) : 'New'}</p>
             <p className="text-xs text-muted">Avg Rating</p>
           </div>
           <div className="glass-card flex flex-col items-center justify-center py-4">

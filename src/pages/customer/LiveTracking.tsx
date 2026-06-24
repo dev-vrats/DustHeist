@@ -501,7 +501,7 @@ export default function LiveTracking() {
     };
     const currentKey = statusMap[booking.status] ?? null;
     const stepIdx = stepOrder.indexOf(step.key);
-    const currentIdx = currentKey ? stepOrder.indexOf(currentKey) : 1;
+    const currentIdx = currentKey ? stepOrder.indexOf(currentKey) : 0;
 
     const checklistKey = step.key as keyof Booking['checklist'];
     const isDone = !!checklist?.[checklistKey];
@@ -609,16 +609,16 @@ export default function LiveTracking() {
               <div className="flex items-center gap-1 mt-0.5">
                 <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
                 <span className="text-sm font-semibold text-text-light">
-                  {(washerInfo?.rating ?? 4.8).toFixed(1)}
+                  {washerInfo?.rating ? washerInfo.rating.toFixed(1) : 'New'}
                 </span>
                 <span className="text-muted text-xs">· Verified Pro</span>
               </div>
               <div className="flex items-center gap-1.5 mt-1">
                 <Car className="w-3.5 h-3.5 text-muted flex-shrink-0" />
                 <span className="text-xs text-muted truncate">
-                  {washerInfo?.vehicleInfo
+                  {washerInfo?.vehicleInfo?.make
                     ? `${washerInfo.vehicleInfo.make} – ${washerInfo.vehicleInfo.color}`
-                    : 'Honda Activa – Blue'}
+                    : 'Vehicle info not provided'}
                 </span>
               </div>
             </div>
