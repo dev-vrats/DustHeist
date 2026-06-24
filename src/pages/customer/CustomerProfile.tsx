@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Camera, LogOut, Loader2, User, Mail, Calendar, Settings, ChevronRight, HelpCircle, FileText } from 'lucide-react';
+import { Camera, LogOut, Loader2, User, Mail, Calendar, Settings, ChevronRight, HelpCircle, FileText, Car, Edit2 } from 'lucide-react';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { doc, updateDoc } from 'firebase/firestore';
 import toast from 'react-hot-toast';
@@ -145,10 +145,46 @@ export default function CustomerProfile() {
             <div>
               <p className="text-xs text-muted mb-0.5">Member Since</p>
               <p className="text-sm font-medium text-text-light">
-                {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric'}) : 'Recently'}
+                {profile?.createdAt 
+                  ? new Date((profile.createdAt as any).toDate ? (profile.createdAt as any).toDate() : profile.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric'}) 
+                  : 'Recently'}
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Vehicles Section */}
+        <div className="flex items-center justify-between mt-8 mb-2">
+          <h3 className="text-xs font-semibold text-muted uppercase tracking-widest px-1">Your Vehicles</h3>
+          <button onClick={() => toast("Add vehicle coming soon in next update!")} className="text-xs text-primary font-medium hover:underline">Add New</button>
+        </div>
+        <div className="glass-card p-4">
+          {(profile as any)?.vehicles?.length > 0 ? (
+            <div className="space-y-3">
+              {(profile as any).vehicles.map((v: any, i: number) => (
+                <div key={i} className="flex justify-between items-center bg-dark-bg/60 p-3 rounded-xl border border-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Car size={16} className="text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-text-light">{v.color} {v.make} {v.model}</p>
+                      <p className="text-xs text-muted uppercase tracking-wider">{v.plate}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => toast("Edit vehicle coming soon!")} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <Edit2 size={14} className="text-muted hover:text-text-light" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <Car size={24} className="text-muted mx-auto mb-2 opacity-50" />
+              <p className="text-sm text-muted">No vehicles added yet.</p>
+              <button onClick={() => toast("Add vehicle coming soon in next update!")} className="text-xs font-medium text-primary mt-2">Add your first vehicle</button>
+            </div>
+          )}
         </div>
 
         {/* Settings Links */}
@@ -159,7 +195,7 @@ export default function CustomerProfile() {
             { icon: HelpCircle, label: 'Help & Support', color: 'text-slate-400' },
             { icon: FileText, label: 'Terms of Service', color: 'text-slate-400' },
           ].map((item, idx) => (
-            <button key={idx} className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors text-left">
+            <button key={idx} onClick={() => toast('This section is under construction.')} className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors text-left">
               <div className="flex items-center gap-3">
                 <item.icon size={18} className={item.color} />
                 <span className="text-sm text-text-light font-medium">{item.label}</span>

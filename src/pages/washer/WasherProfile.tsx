@@ -164,7 +164,9 @@ export default function WasherProfile() {
             <div>
               <p className="text-xs text-muted mb-0.5">Member Since</p>
               <p className="text-sm font-medium text-text-light">
-                {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric'}) : 'Recently'}
+                {profile?.createdAt 
+                  ? new Date((profile.createdAt as any).toDate ? (profile.createdAt as any).toDate() : profile.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric'}) 
+                  : 'Recently'}
               </p>
             </div>
           </div>
@@ -177,7 +179,7 @@ export default function WasherProfile() {
             { icon: Settings, label: 'App Settings', color: 'text-slate-400' },
             { icon: HelpCircle, label: 'Help & Support', color: 'text-slate-400' },
           ].map((item, idx) => (
-            <button key={idx} className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors text-left">
+            <button key={idx} onClick={() => toast('This section is under construction.')} className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors text-left">
               <div className="flex items-center gap-3">
                 <item.icon size={18} className={item.color} />
                 <span className="text-sm text-text-light font-medium">{item.label}</span>
