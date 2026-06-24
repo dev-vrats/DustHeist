@@ -47,7 +47,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchProfile = async (uid: string): Promise<UserProfile | null> => {
     const snap = await getDoc(doc(db, 'users', uid));
     if (snap.exists()) {
-      return { uid, ...snap.data() } as UserProfile;
+      const baseData = snap.data();
+      const role = baseData.role;
+      
+      if (role === 'customer') {
+        const customerSnap = await getDoc(doc(db, 'customers', uid));
+        if (customerSnap.exists()) {
+          return { uid, ...baseData, ...customerSnap.data() } as UserProfile;
+        }
+      } else if (role === 'washer') {
+        const washerSnap = await getDoc(doc(db, 'washers', uid));
+        if (washerSnap.exists()) {
+          return { uid, ...baseData, ...washerSnap.data() } as UserProfile;
+        }
+      }
+      
+      return { uid, ...baseData } as UserProfile;
     }
     return null;
   };
