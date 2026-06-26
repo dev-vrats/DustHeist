@@ -9,23 +9,23 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#B2D5E5', // Candy Blue
-          50: '#F5FAFB',
-          100: '#E8F4F8',
-          200: '#D5EAF2',
-          300: '#C2DFEB',
-          400: '#B2D5E5',
-          500: '#B2D5E5',
-          600: '#8BBDD2',
-          700: '#6AA3BD',
-          800: '#4F8DA8',
-          900: '#3A758F',
+          DEFAULT: '#7FB5CC', // Candy Blue — slightly darker
+          50: '#EFF7FB',
+          100: '#D9EDF5',
+          200: '#C0E0EE',
+          300: '#A3CEE4',
+          400: '#7FB5CC',
+          500: '#7FB5CC',
+          600: '#5E9DB7',
+          700: '#4585A0',
+          800: '#326E88',
+          900: '#235570',
         },
         accent: {
-          DEFAULT: '#B2D5E5',
-          50: '#F5FAFB',
-          500: '#B2D5E5',
-          600: '#8BBDD2',
+          DEFAULT: '#7FB5CC',
+          50: '#EFF7FB',
+          500: '#7FB5CC',
+          600: '#5E9DB7',
         },
         warning: {
           DEFAULT: '#F59E0B',
@@ -58,10 +58,10 @@ export default {
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'spatial-bg': 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(178,213,229,0.07) 0%, transparent 60%), linear-gradient(180deg, #020202 0%, #04080D 100%)',
-        'candy-gradient': 'linear-gradient(135deg, #B2D5E5 0%, #8BBDD2 50%, #6AA3BD 100%)',
-        'spatial-card': 'linear-gradient(145deg, rgba(178,213,229,0.06) 0%, rgba(178,213,229,0.02) 100%)',
-        'depth-gradient': 'linear-gradient(180deg, rgba(178,213,229,0.04) 0%, rgba(0,0,0,0) 100%)',
+        'spatial-bg': 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(127,181,204,0.07) 0%, transparent 60%), linear-gradient(180deg, #020202 0%, #04080D 100%)',
+        'candy-gradient': 'linear-gradient(135deg, #7FB5CC 0%, #5E9DB7 50%, #4585A0 100%)',
+        'spatial-card': 'linear-gradient(145deg, rgba(127,181,204,0.06) 0%, rgba(127,181,204,0.02) 100%)',
+        'depth-gradient': 'linear-gradient(180deg, rgba(127,181,204,0.04) 0%, rgba(0,0,0,0) 100%)',
       },
       boxShadow: {
         // Spatial elevation system
@@ -69,9 +69,11 @@ export default {
         'spatial-md':  '0 4px 20px rgba(0,0,0,0.6), 0 0 0 0.5px rgba(178,213,229,0.1), inset 0 1px 0 rgba(255,255,255,0.05)',
         'spatial-lg':  '0 8px 40px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(178,213,229,0.12), inset 0 1px 0 rgba(255,255,255,0.06)',
         'spatial-xl':  '0 20px 60px rgba(0,0,0,0.8), 0 0 0 0.5px rgba(178,213,229,0.15), inset 0 1px 0 rgba(255,255,255,0.08)',
-        'candy-glow':  '0 0 20px rgba(178,213,229,0.25), 0 0 60px rgba(178,213,229,0.08)',
-        'candy-glow-lg': '0 0 40px rgba(178,213,229,0.35), 0 0 80px rgba(178,213,229,0.12)',
-        'inner-glow':  'inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.3)',
+        'glow-blue': '0 0 25px rgba(127,181,204,0.4)',
+        'glow-green': '0 0 25px rgba(127,181,204,0.4)',
+        'glow-orange': '0 0 25px rgba(255, 109, 0, 0.3)',
+        'card': '0 8px 32px rgba(0, 0, 0, 0.5)',
+        'glass': '0 8px 32px rgba(0, 0, 0, 0.4)',
       },
       borderRadius: {
         'xl':  '0.75rem',

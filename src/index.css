@@ -12,18 +12,18 @@
 
 /* ── CSS Variables ──────────────────────────────────── */
 :root {
-  --candy:       #B2D5E5;
-  --candy-dim:   #8BBDD2;
-  --candy-deep:  #6AA3BD;
+  --candy:       #7FB5CC;
+  --candy-dim:   #5E9DB7;
+  --candy-deep:  #4585A0;
   --onyx:        #020202;
   --surface-1:   #050A0F;
   --surface-2:   #091018;
   --surface-3:   #0D1722;
   --surface-4:   #111E2E;
-  --border-glow: rgba(178, 213, 229, 0.10);
-  --border-soft: rgba(178, 213, 229, 0.06);
+  --border-glow: rgba(127, 181, 204, 0.10);
+  --border-soft: rgba(127, 181, 204, 0.06);
   --text-main:   #FFFFFF;
-  --text-secondary: #C5D5E0;
+  --text-secondary: #B8CDD8;
   --text-muted:  #7C8FA0;
 
   /* Spatial elevation durations */
@@ -127,17 +127,17 @@
     font-weight: 700;
     font-size: 0.9rem;
     letter-spacing: 0.01em;
-    color: #02080D;
-    background: linear-gradient(160deg, #C8E6F2 0%, #B2D5E5 40%, #8BBDD2 100%);
+    color: #040F18;
+    background: linear-gradient(160deg, #9ECFDF 0%, #7FB5CC 45%, #5E9DB7 100%);
     border: none;
     border-radius: 1rem;
     cursor: pointer;
     overflow: hidden;
     transition: all 400ms var(--ease-spatial);
     box-shadow:
-      0 4px 16px rgba(178,213,229,0.3),
-      0 1px 0 rgba(255,255,255,0.4) inset,
-      0 -1px 0 rgba(0,0,0,0.15) inset;
+      0 4px 16px rgba(127,181,204,0.28),
+      0 1px 0 rgba(255,255,255,0.35) inset,
+      0 -1px 0 rgba(0,0,0,0.18) inset;
     transform: translateY(0) scale(1);
   }
 
@@ -146,41 +146,22 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: linear-gradient(160deg, rgba(255,255,255,0.25) 0%, transparent 60%);
+    background: linear-gradient(160deg, rgba(255,255,255,0.22) 0%, transparent 55%);
     pointer-events: none;
-  }
-
-  /* Liquid ripple effect on press */
-  .btn-primary::after {
-    content: '';
-    position: absolute;
-    inset: 50%;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.3);
-    transform: translate(-50%, -50%) scale(0);
-    transition: transform 0.5s ease, opacity 0.5s ease;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .btn-primary:active::after {
-    transform: translate(-50%, -50%) scale(3);
-    opacity: 0;
-    transition: transform 0.4s ease, opacity 0.4s ease 0.1s;
   }
 
   .btn-primary:hover {
-    background: linear-gradient(160deg, #D4EBF5 0%, #BEE0EE 40%, #9BCBDE 100%);
+    background: linear-gradient(160deg, #AADAE8 0%, #8DC5D8 45%, #6AADC4 100%);
     box-shadow:
-      0 8px 32px rgba(178,213,229,0.45),
-      0 1px 0 rgba(255,255,255,0.5) inset;
+      0 8px 28px rgba(127,181,204,0.4),
+      0 1px 0 rgba(255,255,255,0.45) inset;
     transform: translateY(-1px) scale(1.005);
   }
 
   .btn-primary:active {
     transform: translateY(0) scale(0.975);
     box-shadow:
-      0 2px 8px rgba(178,213,229,0.2),
+      0 2px 8px rgba(127,181,204,0.2),
       0 1px 0 rgba(255,255,255,0.25) inset;
     transition-duration: 100ms;
   }
