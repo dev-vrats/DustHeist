@@ -67,7 +67,7 @@ export default function WasherEarnings() {
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h4 className="text-sm font-bold text-text-light">{job.serviceType.toUpperCase()} WASH</h4>
-                      <p className="text-xs text-muted">{formatDate(job.completedAt)}</p>
+                      <p className="text-xs text-muted">{formatDate(job.completedAt || new Date())}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold text-accent">{formatCurrency(job.pricing.total)}</p>
@@ -77,12 +77,15 @@ export default function WasherEarnings() {
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2 bg-dark-bg/60 p-2 rounded-lg mt-3 border border-white/5">
-                    <Car size={14} className="text-muted" />
-                    <span className="text-xs text-text-light flex-1">
-                      {job.vehicleDetails?.make} {job.vehicleDetails?.model} ({job.vehicleDetails?.plate})
-                    </span>
-                  </div>
+                  {/* Cast to any since vehicleDetails might not be in the strict Booking interface if joined later */}
+                  {((job as any).vehicleDetails) && (
+                    <div className="flex items-center gap-2 bg-dark-bg/60 p-2 rounded-lg mt-3 border border-white/5">
+                      <Car size={14} className="text-muted" />
+                      <span className="text-xs text-text-light flex-1">
+                        {(job as any).vehicleDetails?.make} {(job as any).vehicleDetails?.model} ({(job as any).vehicleDetails?.plate})
+                      </span>
+                    </div>
+                  )}
 
                   {job.afterPhoto && (
                     <div className="mt-3">

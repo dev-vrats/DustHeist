@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, serverTimestamp, query, collection, orderBy, addDoc } from 'firebase/firestore';
 import { db } from '@/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Booking, WasherProfile } from '@/types';
@@ -17,6 +17,8 @@ import {
   MapPin,
   Droplets,
   Sparkles,
+  MessageCircle,
+  Send,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -763,9 +765,9 @@ export default function LiveTracking() {
                             {isMe && (
                               <span className="text-[10px] text-muted mt-1 mr-1 flex items-center gap-1">
                                 {msg.status === 'seen' ? (
-                                  <><CheckCircle size={10} className="text-primary" /> Seen</>
+                                  <><CheckCircle2 size={10} className="text-primary" /> Seen</>
                                 ) : (
-                                  <><CheckCircle size={10} /> Sent</>
+                                  <><CheckCircle2 size={10} /> Sent</>
                                 )}
                               </span>
                             )}

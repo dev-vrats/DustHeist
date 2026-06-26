@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import {
   MapPin, Car, CheckCircle, Circle, Navigation, Camera,
   MessageSquare, Send, AlertTriangle, ChevronLeft, Upload,
-  Package, Clock, Shield,
+  Package, Clock, Shield, Phone, CheckCircle2
 } from 'lucide-react';
 import {
   doc, collection, query, orderBy, onSnapshot,
@@ -26,6 +26,7 @@ interface ChatMsg {
   senderId: string;
   senderName: string;
   text: string;
+  status: 'sent' | 'seen';
   createdAt: Date;
 }
 

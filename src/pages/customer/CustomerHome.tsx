@@ -247,7 +247,7 @@ export default function CustomerHome() {
               </div>
               <motion.button 
                 onClick={() => {
-                  if (profile?.unreadCount && profile.unreadCount > 0) {
+                  if ((profile as any)?.unreadCount && (profile as any).unreadCount > 0) {
                     navigate('/customer/history'); // Or wherever chat is most accessible
                   } else {
                     toast('No new notifications', { icon: '🔔' });
