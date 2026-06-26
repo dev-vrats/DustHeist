@@ -245,9 +245,21 @@ export default function CustomerHome() {
                 <MapPin size={12} className="text-primary" />
                 <span className="max-w-[80px] truncate">{city}</span>
               </div>
-              <motion.button onClick={() => toast('No new notifications', { icon: '🔔' })} whileTap={{ scale: 0.9 }} className="w-9 h-9 rounded-xl bg-dark-card border border-dark-border flex items-center justify-center relative">
+              <motion.button 
+                onClick={() => {
+                  if (profile?.unreadCount && profile.unreadCount > 0) {
+                    navigate('/customer/history'); // Or wherever chat is most accessible
+                  } else {
+                    toast('No new notifications', { icon: '🔔' });
+                  }
+                }} 
+                whileTap={{ scale: 0.9 }} 
+                className="w-9 h-9 rounded-xl bg-dark-card border border-dark-border flex items-center justify-center relative"
+              >
                 <Bell size={16} className="text-muted" />
-                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent" />
+                {(profile as any)?.unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent" />
+                )}
               </motion.button>
             </div>
           </div>

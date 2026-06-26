@@ -93,29 +93,36 @@ export default function WasherHome() {
 
     const q = query(
       collection(db, 'bookings'),
-      where('washerId', '==', user.uid),
-      where('status', '==', 'completed'),
-      orderBy('completedAt', 'desc'),
-      limit(50),
+      where('washerId', '==', user.uid)
     );
     const unsub = onSnapshot(q, (snap) => {
       let todayEarnings = 0;
       let todayJobs = 0;
       let weekEarnings = 0;
-      const recent: Booking[] = [];
+      const allCompleted: Booking[] = [];
 
-      snap.docs.forEach((d, idx) => {
+      snap.docs.forEach((d) => {
         const data = d.data();
+        if (data.status !== 'completed') return;
+
         const completedAt = toDate(data.completedAt);
         const amount = data.pricing?.total ?? 0;
 
         if (completedAt >= startOfDay) { todayEarnings += amount; todayJobs++; }
         if (completedAt >= startOfWeek) weekEarnings += amount;
-        if (idx < 5) recent.push({ id: d.id, ...data } as Booking);
+        allCompleted.push({ id: d.id, ...data } as Booking);
+      });
+
+      allCompleted.sort((a, b) => {
+        const tA = toDate(a.completedAt).getTime();
+        const tB = toDate(b.completedAt).getTime();
+        return tB - tA;
       });
 
       setStats({ todayEarnings, todayJobs, weekEarnings });
-      setRecentJobs(recent);
+      setRecentJobs(allCompleted.slice(0, 5));
+    }, (err) => {
+      console.error('Stats fetch error:', err);
     });
     return () => unsub();
   }, [user?.uid]);
@@ -497,18 +504,23 @@ export default function WasherHome() {
           ) : (
             <div className="space-y-3">
               {recentJobs.map((job) => (
-                <div key={job.id} className="glass-card p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle size={18} className="text-accent" />
+                <div key={job.id} className="glass-card p-3 rounded-xl">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="text-sm font-semibold text-text-light">{SERVICE_LABELS[job.serviceType]}</h4>
+                      <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
+                        <Clock size={10} />
+                        {formatDateTime(toDate(job.completedAt))}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold text-accent">{formatCurrency(job.pricing?.total ?? 0)}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-text-light text-sm font-medium truncate">{SERVICE_LABELS[job.serviceType]}</p>
-                    <p className="text-muted text-xs mt-0.5 flex items-center gap-1">
-                      <Clock size={10} />
-                      {formatDateTime(toDate(job.completedAt))}
-                    </p>
-                  </div>
-                  <p className="text-accent font-bold text-sm flex-shrink-0">{formatCurrency(job.pricing?.total ?? 0)}</p>
+                  
+                  {job.afterPhoto && (
+                    <div className="mt-2">
+                      <img src={job.afterPhoto} alt="Completed Wash" className="w-full h-24 object-cover rounded-lg border border-white/10" />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

@@ -61,6 +61,7 @@ export default function ActiveJob() {
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const [customerInfo, setCustomerInfo] = useState<{name: string; profilePic: string; phone: string} | null>(null);
   const [loadingBooking, setLoadingBooking] = useState(true);
   const [advancing, setAdvancing] = useState(false);
 
@@ -71,6 +72,7 @@ export default function ActiveJob() {
 
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -88,14 +90,23 @@ export default function ActiveJob() {
       setBooking(data);
       setLoadingBooking(false);
 
-      // Fetch vehicle info if available
-      if (data.vehicleId && data.customerId) {
+      // Fetch customer and vehicle info
+      if (data.customerId) {
         try {
           const custSnap = await getDoc(doc(db, 'customers', data.customerId));
           if (custSnap.exists()) {
-            const vehicles: Vehicle[] = custSnap.data().vehicles || [];
-            const v = vehicles.find((x) => x.id === data.vehicleId);
-            if (v) setVehicle(v);
+            const custData = custSnap.data();
+            setCustomerInfo({
+              name: custData.name || 'Customer',
+              profilePic: custData.profilePic || '',
+              phone: custData.phone || ''
+            });
+
+            if (data.vehicleId) {
+              const vehicles: Vehicle[] = custData.vehicles || [];
+              const v = vehicles.find((x) => x.id === data.vehicleId);
+              if (v) setVehicle(v);
+            }
           }
         } catch { /* ignore */ }
       }
@@ -111,22 +122,48 @@ export default function ActiveJob() {
       orderBy('createdAt', 'asc'),
     );
     const unsub = onSnapshot(q, (snap) => {
-      setMessages(
-        snap.docs.map((d) => ({
-          id: d.id,
-          senderId: d.data().senderId,
-          senderName: d.data().senderName,
-          text: d.data().text,
-          createdAt: toDate(d.data().createdAt),
-        })),
-      );
+      const newMsgs = snap.docs.map((d) => ({
+        id: d.id,
+        senderId: d.data().senderId,
+        senderName: d.data().senderName,
+        text: d.data().text,
+        status: d.data().status || 'sent',
+        createdAt: toDate(d.data().createdAt),
+      }));
+      setMessages(newMsgs);
+
+      // Mark incoming messages as seen if chat is open
+      if (showChat) {
+        newMsgs.forEach((m) => {
+          if (m.senderId !== user?.uid && m.status !== 'seen') {
+            updateDoc(doc(db, 'chats', bookingId, 'messages', m.id), { status: 'seen' }).catch(console.error);
+          }
+        });
+      }
     });
     return () => unsub();
-  }, [bookingId]);
+  }, [bookingId, showChat, user?.uid]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // ── Location Tracker (Live Tracking) ───────────────────────────────────────
+  useEffect(() => {
+    if (!navigator.geolocation || !user?.uid) return;
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        updateDoc(doc(db, 'washers', user.uid), {
+          currentLocation: { lat: latitude, lng: longitude },
+          lastActive: new Date()
+        }).catch(() => {}); // silent fail if offline
+      },
+      (err) => console.error('Location tracking error:', err),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [user?.uid]);
 
   // ── Advance status ────────────────────────────────────────────────────────
   const handleAdvance = async (step: StepKey) => {
@@ -196,12 +233,23 @@ export default function ActiveJob() {
         completedAt: serverTimestamp(),
       });
 
-      setShowPhotoModal(false);
-      if (booking?.pricing?.paymentMethod === 'after_wash') {
-        setShowQRModal(true);
-      } else {
-        toast.success('Job completed! 🎉');
+      // Increment total washes for the washer
+      if (user?.uid) {
+        const { increment } = await import('firebase/firestore');
+        await updateDoc(doc(db, 'washers', user.uid), {
+          jobsCompleted: increment(1)
+        });
       }
+
+      setShowPhotoModal(false);
+      setShowSuccessAnimation(true); // new state for green tick animation
+      
+      // Delay QR modal if needed
+      setTimeout(() => {
+        if (booking?.pricing?.paymentMethod === 'after_wash') {
+          setShowQRModal(true);
+        }
+      }, 3000);
     } catch (err) {
       console.error('Upload Error:', err);
       toast.error('Upload failed. Please try again.');
@@ -222,7 +270,17 @@ export default function ActiveJob() {
         senderName: profile?.name ?? 'Washer',
         text: chatText.trim(),
         createdAt: serverTimestamp(),
+        status: 'sent',
       });
+      
+      // Increment unread count for customer
+      if (booking?.customerId) {
+        const { increment } = await import('firebase/firestore');
+        updateDoc(doc(db, 'customers', booking.customerId), {
+          unreadCount: increment(1)
+        }).catch(console.error);
+      }
+
       setChatText('');
     } catch {
       toast.error('Failed to send message');
@@ -298,6 +356,40 @@ export default function ActiveJob() {
       </div>
 
       <div className="px-4 pt-5 space-y-4">
+        {/* ── Customer Info Card ────────────────────────────────────────── */}
+        <div className="glass-card p-4">
+          <div className="flex items-center gap-3">
+            {customerInfo?.profilePic ? (
+              <img
+                src={customerInfo.profilePic}
+                alt={customerInfo.name}
+                className="w-14 h-14 rounded-2xl object-cover border-2 border-primary/40 flex-shrink-0"
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-2xl bg-primary/20 border-2 border-primary/40 flex items-center justify-center flex-shrink-0">
+                <span className="text-xl font-display font-bold text-primary">
+                  {(customerInfo?.name ?? 'C').charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted font-medium mb-0.5 uppercase tracking-wide">Customer</p>
+              <p className="font-display font-bold text-text-light text-base truncate">
+                {customerInfo?.name ?? 'Loading...'}
+              </p>
+            </div>
+            {customerInfo?.phone && (
+              <a
+                href={`tel:${customerInfo.phone}`}
+                className="w-12 h-12 rounded-2xl bg-accent/15 border border-accent/30 flex items-center justify-center flex-shrink-0 hover:bg-accent/25 active:scale-95 transition-all"
+                aria-label="Call customer"
+              >
+                <Phone className="w-5 h-5 text-accent" />
+              </a>
+            )}
+          </div>
+        </div>
+
         {/* ── Customer Address + Navigate ──────────────────────────────── */}
         <div className="glass-card p-4">
           <div className="flex items-start gap-3">
@@ -466,12 +558,21 @@ export default function ActiveJob() {
                     messages.map((msg) => {
                       const isMe = msg.senderId === user?.uid;
                       return (
-                        <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                        <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                           <div className={`max-w-[75%] px-3 py-2 rounded-xl text-sm ${
                             isMe ? 'bg-primary text-white rounded-br-sm' : 'bg-dark-hover text-text-light rounded-bl-sm'
                           }`}>
                             {msg.text}
                           </div>
+                          {isMe && (
+                            <span className="text-[10px] text-muted mt-1 mr-1 flex items-center gap-1">
+                              {msg.status === 'seen' ? (
+                                <><CheckCircle size={10} className="text-primary" /> Seen</>
+                              ) : (
+                                <><CheckCircle size={10} /> Sent</>
+                              )}
+                            </span>
+                          )}
                         </div>
                       );
                     })
@@ -586,6 +687,66 @@ export default function ActiveJob() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Success Animation Overlay ────────────────────────────────────── */}
+      <AnimatePresence>
+        {showSuccessAnimation && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-dark-bg/95 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 20 }}
+              className="flex flex-col items-center justify-center"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 20 }}
+                className="w-32 h-32 bg-green-500 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(34,197,94,0.5)] mb-6 relative"
+              >
+                {/* Ping rings */}
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0.8 }}
+                  animate={{ scale: 1.5, opacity: 0 }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="absolute inset-0 bg-green-500 rounded-full"
+                />
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0.8 }}
+                  animate={{ scale: 2, opacity: 0 }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  className="absolute inset-0 bg-green-500 rounded-full"
+                />
+                
+                <CheckCircle size={80} className="text-white relative z-10" strokeWidth={2.5} />
+              </motion.div>
+              
+              <motion.h2 
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="text-3xl font-display font-bold text-white mb-2"
+              >
+                Job Completed!
+              </motion.h2>
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-green-400 font-medium"
+              >
+                Excellent work!
+              </motion.p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

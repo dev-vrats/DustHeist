@@ -370,16 +370,32 @@ function LiveMapView({
         <Marker position={[center.lat, center.lng]} icon={customerIcon} />
         {washerLocation && <Marker position={[washerLocation.lat, washerLocation.lng]} icon={washerIcon} />}
       </MapContainer>
+      
+      {/* Magic CSS to make the Leaflet Marker slide smoothly as lat/lng changes */}
+      <style>{`
+        .washer-marker {
+          transition: transform 1.5s linear !important;
+        }
+      `}</style>
     </div>
   );
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────
 
+interface ChatMsg {
+  id: string;
+  senderId: string;
+  senderName: string;
+  text: string;
+  status: 'sent' | 'seen';
+  createdAt: Date;
+}
+
 export default function LiveTracking() {
   const { bookingId } = useParams<{ bookingId: string }>();
   const navigate = useNavigate();
-  const { profile: _profile } = useAuth(); // available for future auth guards
+  const { user, profile } = useAuth();
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [washerInfo, setWasherInfo] = useState<WasherInfo | null>(null);
@@ -388,6 +404,13 @@ export default function LiveTracking() {
   const [cancelling, setCancelling] = useState(false);
   const [showCompletion, setShowCompletion] = useState(false);
   const [washerX, setWasherX] = useState(20);
+
+  // Chat state
+  const [showChat, setShowChat] = useState(false);
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const [chatText, setChatText] = useState('');
+  const [sendingMsg, setSendingMsg] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const washerXRef = useRef(20);
   const animRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -461,9 +484,70 @@ export default function LiveTracking() {
     };
   }, [booking?.status]);
 
-  // ── Cancel booking ───────────────────────────────────────────────────────
+  // ── Clear Unread Count ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (user?.uid) {
+      updateDoc(doc(db, 'customers', user.uid), { unreadCount: 0 }).catch(() => {});
+    }
+  }, [user?.uid, showChat]);
+
+  // ── Chat listener ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!bookingId) return;
+    const q = query(
+      collection(db, 'chats', bookingId, 'messages'),
+      orderBy('createdAt', 'asc'),
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      const newMsgs = snap.docs.map((d) => ({
+        id: d.id,
+        senderId: d.data().senderId,
+        senderName: d.data().senderName,
+        text: d.data().text,
+        status: d.data().status || 'sent',
+        createdAt: d.data().createdAt ? d.data().createdAt.toDate() : new Date(),
+      }));
+      setMessages(newMsgs as ChatMsg[]);
+
+      // Mark incoming messages as seen if chat is open
+      if (showChat) {
+        newMsgs.forEach((m) => {
+          if (m.senderId !== user?.uid && m.status !== 'seen') {
+            updateDoc(doc(db, 'chats', bookingId, 'messages', m.id), { status: 'seen' }).catch(console.error);
+          }
+        });
+      }
+    });
+    return () => unsub();
+  }, [bookingId, showChat, user?.uid]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // ── Chat send ─────────────────────────────────────────────────────────────
+  const handleSendMsg = async () => {
+    if (!chatText.trim() || !bookingId || !user?.uid) return;
+    setSendingMsg(true);
+    try {
+      await addDoc(collection(db, 'chats', bookingId, 'messages'), {
+        senderId: user.uid,
+        senderName: profile?.name ?? 'Customer',
+        text: chatText.trim(),
+        createdAt: serverTimestamp(),
+        status: 'sent',
+      });
+      setChatText('');
+    } catch {
+      toast.error('Failed to send message');
+    } finally {
+      setSendingMsg(false);
+    }
+  };
+
   const handleCancel = async () => {
     if (!bookingId || !booking) return;
+    if (!window.confirm('Are you sure you want to cancel this wash?')) return;
     setCancelling(true);
     try {
       await updateDoc(doc(db, 'bookings', bookingId), {
@@ -514,7 +598,7 @@ export default function LiveTracking() {
     ? new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
     : undefined;
 
-  const canCancel = !!booking && ['accepted', 'enRoute'].includes(booking.status);
+  const canCancel = !!booking && ['pending', 'accepted'].includes(booking.status);
   const googleMapsKey = (import.meta as any).env.VITE_GOOGLE_MAPS_KEY as string | undefined;
 
   // ── Loading state ────────────────────────────────────────────────────────
@@ -635,6 +719,85 @@ export default function LiveTracking() {
 
           {/* Divider */}
           <div className="h-px bg-dark-border" />
+
+          {/* ── In-App Chat ──────────────────────────────────────────────── */}
+          <div className="glass-card overflow-hidden">
+            <button
+              onClick={() => setShowChat((s) => !s)}
+              className="w-full flex items-center justify-between p-4 hover:bg-dark-hover transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <MessageCircle size={16} className="text-primary" />
+                <span className="text-text-light font-semibold text-sm">Chat with Washer</span>
+                {messages.length > 0 && (
+                  <span className="bg-primary text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
+                    {messages.length}
+                  </span>
+                )}
+              </div>
+              <ChevronLeft size={16} className={`text-muted transition-transform ${showChat ? '-rotate-90' : 'rotate-180'}`} />
+            </button>
+
+            <AnimatePresence>
+              {showChat && (
+                <motion.div
+                  initial={{ height: 0 }}
+                  animate={{ height: 'auto' }}
+                  exit={{ height: 0 }}
+                  className="overflow-hidden border-t border-dark-border"
+                >
+                  {/* Messages */}
+                  <div className="h-56 overflow-y-auto p-4 space-y-3 scrollbar-hide bg-dark-bg/50">
+                    {messages.length === 0 ? (
+                      <p className="text-muted text-sm text-center mt-8">No messages yet. Say hi!</p>
+                    ) : (
+                      messages.map((msg) => {
+                        const isMe = msg.senderId === user?.uid;
+                        return (
+                          <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                            <div className={`max-w-[75%] px-3 py-2 rounded-xl text-sm ${
+                              isMe ? 'bg-primary text-white rounded-br-sm' : 'bg-dark-card border border-dark-border text-text-light rounded-bl-sm'
+                            }`}>
+                              {msg.text}
+                            </div>
+                            {isMe && (
+                              <span className="text-[10px] text-muted mt-1 mr-1 flex items-center gap-1">
+                                {msg.status === 'seen' ? (
+                                  <><CheckCircle size={10} className="text-primary" /> Seen</>
+                                ) : (
+                                  <><CheckCircle size={10} /> Sent</>
+                                )}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                    <div ref={chatEndRef} />
+                  </div>
+
+                  {/* Input */}
+                  <div className="flex items-center gap-2 p-3 border-t border-dark-border bg-dark-card">
+                    <input
+                      type="text"
+                      value={chatText}
+                      onChange={(e) => setChatText(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSendMsg()}
+                      placeholder="Type a message..."
+                      className="flex-1 bg-dark-bg border border-dark-border rounded-xl px-4 py-2 text-sm text-text-light placeholder:text-muted focus:outline-none focus:border-primary/50"
+                    />
+                    <button
+                      onClick={handleSendMsg}
+                      disabled={!chatText.trim() || sendingMsg}
+                      className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white disabled:opacity-50 transition-all hover:bg-primary-hover active:scale-95"
+                    >
+                      <Send size={16} />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* ── Status Timeline ──────────────────────────────────────────── */}
           <div>

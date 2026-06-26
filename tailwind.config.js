@@ -9,18 +9,19 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#1A73E8',
-          50: '#E8F1FD',
-          100: '#C5D9FA',
-          500: '#1A73E8',
-          600: '#1557B0',
-          700: '#0F3E80',
+          DEFAULT: '#B2D5E5', // Candy Blue
+          50: '#F0F7FA',
+          100: '#E1EFF5',
+          400: '#B2D5E5',
+          500: '#B2D5E5',
+          600: '#9DBFD0',
+          700: '#8AA8B8',
         },
         accent: {
-          DEFAULT: '#00C853',
-          50: '#E0FFF0',
-          500: '#00C853',
-          600: '#00A844',
+          DEFAULT: '#B2D5E5', // Also Candy Blue for accents
+          50: '#F0F7FA',
+          500: '#B2D5E5',
+          600: '#9DBFD0',
         },
         warning: {
           DEFAULT: '#FF6D00',
@@ -28,13 +29,13 @@ export default {
           600: '#E06200',
         },
         dark: {
-          bg: '#0F172A',
-          card: '#1E293B',
-          border: '#334155',
-          hover: '#273548',
+          bg: '#020202', // Onyx
+          card: 'rgba(255, 255, 255, 0.03)', // Liquid Glass base
+          border: 'rgba(255, 255, 255, 0.08)',
+          hover: 'rgba(255, 255, 255, 0.06)',
         },
-        muted: '#94A3B8',
-        'text-light': '#F8FAFC',
+        muted: '#A0AAB5',
+        'text-light': '#FFFFFF',
       },
       fontFamily: {
         display: ['"Space Grotesk"', 'sans-serif'],
@@ -43,17 +44,17 @@ export default {
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'hero-gradient': 'linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%)',
-        'card-gradient': 'linear-gradient(145deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.9) 100%)',
-        'blue-gradient': 'linear-gradient(135deg, #1A73E8 0%, #0F3E80 100%)',
-        'green-gradient': 'linear-gradient(135deg, #00C853 0%, #00A844 100%)',
+        'hero-gradient': 'linear-gradient(135deg, #020202 0%, #0A0F14 50%, #020202 100%)',
+        'card-gradient': 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
+        'blue-gradient': 'linear-gradient(135deg, #B2D5E5 0%, #8AA8B8 100%)',
+        'green-gradient': 'linear-gradient(135deg, #B2D5E5 0%, #8AA8B8 100%)',
       },
       boxShadow: {
-        'glow-blue': '0 0 20px rgba(26, 115, 232, 0.3)',
-        'glow-green': '0 0 20px rgba(0, 200, 83, 0.3)',
-        'glow-orange': '0 0 20px rgba(255, 109, 0, 0.3)',
-        'card': '0 4px 24px rgba(0, 0, 0, 0.4)',
-        'glass': '0 8px 32px rgba(0, 0, 0, 0.3)',
+        'glow-blue': '0 0 25px rgba(178, 213, 229, 0.4)',
+        'glow-green': '0 0 25px rgba(178, 213, 229, 0.4)',
+        'glow-orange': '0 0 25px rgba(255, 109, 0, 0.3)',
+        'card': '0 8px 32px rgba(0, 0, 0, 0.5)',
+        'glass': '0 8px 32px rgba(0, 0, 0, 0.4)',
       },
       borderRadius: {
         'xl': '1rem',
